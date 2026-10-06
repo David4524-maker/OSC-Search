@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSC Search</title>
+<link rel="icon" id="fav" href="data:,">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --head:#ffc60f; --head-line:#ed1c24; --body:#00a2e8;
+  --bar-bg:#fff; --bar-border:#000; --bar-radius:40px; --bar-shadow:none;
+  --font:Arial,Helvetica,sans-serif; --t1:#000; --t2:#ff7f27; --link:#00a2e8;
+  --ph:#808080; --text:#222; --head-fg:#000;
+}
+body{min-height:100vh;font-family:var(--font);background:var(--body);color:var(--text);display:flex;flex-direction:column;transition:background .3s}
+header{background:var(--head);border-bottom:6px solid var(--head-line);display:flex;align-items:center;gap:18px;padding:10px 20px;flex-wrap:wrap;color:var(--head-fg)}
+.brand{display:flex;align-items:center;gap:14px;cursor:pointer;border:0;background:none;font:inherit}
+.brand svg{width:78px;height:78px}
+h1{font-size:clamp(34px,6vw,62px);font-weight:900;line-height:1;white-space:nowrap}
+h1 .a{color:var(--t1)} h1 .b{color:var(--t2)}
+.themes{display:flex;flex-wrap:wrap;gap:8px;flex:1;min-width:260px;max-width:520px}
+.themes button{font:700 18px var(--font);padding:4px 14px;cursor:pointer;border:4px solid;transition:transform .15s}
+.themes button:hover{transform:translateY(-2px)}
+.t-viejo{background:#808080;border-color:#b0b0b0;color:#000;text-decoration:underline}
+.t-aero{background:linear-gradient(#8fd3f4,#4aa8e0);border-color:#3b4bc8;color:#fff;text-shadow:0 0 4px #036}
+.t-yahoo{background:#fff;border-color:#a040a0;color:#6a1b9a;font-family:Georgia,serif!important;font-style:italic}
+.t-mini{background:#fff;border-color:#08a8e8;color:#000;text-decoration:underline}
+.t-google{background:#fff;border-color:#ed1c24;color:#4285f4}
+.themes button.on{outline:3px solid #000;outline-offset:2px}
+.about{display:flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--link);font:700 clamp(20px,3vw,34px) var(--font);text-decoration:underline}
+.about svg{width:54px;height:54px}
+main{flex:1;display:grid;grid-template-columns:150px 1fr 170px;grid-template-rows:auto 1fr;gap:10px 20px;padding:10px 24px 30px;align-items:center}
+.eng{display:flex;flex-direction:column;gap:22px;align-items:center;grid-row:1/3;align-self:start;padding-top:10px}
+.eng button,.yt{background:none;border:0;cursor:pointer;transition:transform .15s}
+.eng button:hover,.yt:hover{transform:scale(1.1)}
+.eng button.sel svg,.yt.sel svg{filter:drop-shadow(0 0 8px #fff)}
+.eng svg{width:120px;height:120px}
+.gbtn{background:none}
+.center{grid-column:2;display:flex;flex-direction:column;align-items:center;gap:14px;align-self:start;padding-top:6px}
+.lupa{background:none;border:0;cursor:pointer}
+.lupa svg{width:80px;height:80px}
+.bar{width:100%;background:var(--bar-bg);border:5px solid var(--bar-border);border-radius:var(--bar-radius);box-shadow:var(--bar-shadow);padding:0 24px;height:78px;display:flex;align-items:center}
+.bar input{width:100%;border:0;outline:0;background:transparent;font:700 clamp(18px,2.6vw,32px) var(--font);color:#333}
+.bar input::placeholder{color:var(--ph)}
+.status{font-size:15px;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.yt{grid-column:3;grid-row:1;align-self:start;margin-top:84px}
+.yt svg{width:150px;height:105px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs[hidden]{display:none}
+.tabs button{font:700 15px var(--font);padding:6px 16px;border-radius:20px;border:2px solid rgba(0,0,0,.6);background:#fff;color:#222;cursor:pointer}
+.tabs button.on{background:#222;color:#fff}
+.results{width:100%;display:flex;flex-direction:column;gap:10px}
+.res{display:block;background:rgba(255,255,255,.96);color:#222;text-decoration:none;padding:12px 16px;border-radius:12px;border-left:6px solid var(--head-line);transition:transform .15s,box-shadow .15s}
+.res:hover{transform:translateX(4px);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.res h3{color:#1a4fd6;font-size:19px;margin:4px 0 2px}
+.res small{color:#2e7d32;display:block;word-break:break-all}
+.res p{font-size:15px;line-height:1.4;color:#444;margin-top:4px}
+.src{font-size:12px;font-weight:700;background:#eee;padding:2px 8px;border-radius:10px;color:#555}
+[data-theme=viejo] .res,[data-theme=viejo] .tabs button{border-radius:0}
+.about{margin-left:0}
+.tools{margin-left:auto;display:flex;gap:6px}
+.tools button{font-size:21px;background:rgba(255,255,255,.6);border:2px solid rgba(0,0,0,.5);border-radius:50%;width:44px;height:44px;cursor:pointer;transition:transform .15s}
+.tools button:hover{transform:rotate(12deg) scale(1.1)}
+.barwrap{position:relative;width:100%}
+.bar:focus-within{box-shadow:0 0 0 5px rgba(255,255,255,.65)}
+.ib{background:none;border:0;font-size:24px;cursor:pointer;padding:0 6px}
+.ib.rec{animation:pulse 1s infinite}
+.sug{position:absolute;top:100%;left:0;right:0;margin-top:8px;background:#fff;color:#222;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:9;overflow:hidden}
+.sug div{padding:10px 18px;cursor:pointer;font-size:18px}
+.sug div:hover,.sug .on{background:#e8f0fe}
+#home{display:flex;flex-direction:column;align-items:center;gap:12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);text-align:center;margin-top:10px}
+#home[hidden]{display:none}
+.clock{font-size:clamp(44px,8vw,80px);font-weight:900;line-height:1}
+.greet{font-size:18px;font-weight:700;text-transform:capitalize}
+.chips,.quick{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.pill{font:700 15px var(--font);padding:7px 16px;border-radius:20px;border:2px solid rgba(0,0,0,.55);background:#fff;color:#222;cursor:pointer;text-shadow:none;transition:transform .15s}
+.pill:hover{transform:translateY(-2px) scale(1.04)}
+.ql{display:inline-flex;gap:6px;align-items:center;padding:4px 6px 4px 14px}
+.ql a{color:#222;text-decoration:none}
+.ql button{border:0;background:none;cursor:pointer;font-size:16px;color:#888}
+[data-theme=yahoo] #home{color:#6001d2;text-shadow:none}
+[data-theme=minimalista] #home,[data-theme=google] #home{color:#666;text-shadow:none}
+[data-theme=viejo] .pill{border-radius:0}
+.lupa:hover svg{animation:pulse .8s}
+@keyframes pulse{50%{transform:scale(1.18)}}
+@keyframes inn{from{opacity:0;transform:translateY(10px)}}
+@keyframes sh{to{background-position:-200% 0}}
+.res{position:relative;animation:inn .35s both}
+.res.off{border-left-color:#22b14c}
+.res.off .src{background:#22b14c;color:#fff}
+.res h3 a{color:inherit;text-decoration:none}
+.res h3 a:hover{text-decoration:underline}
+.acts{float:right;display:flex;gap:2px}
+.acts button{background:none;border:0;font-size:19px;cursor:pointer}
+.res mark{background:#fff3a0;padding:0 2px;border-radius:3px}
+.sk{height:84px;background:linear-gradient(90deg,#fff 25%,#e6e6e6 50%,#fff 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+.card{width:100%;background:#fff;color:#222;border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center;border-left:6px solid #ffc60f;animation:inn .35s both}
+.card[hidden]{display:none}
+.card img{width:110px;border-radius:8px}
+.card h3{font-size:20px;margin-bottom:6px}
+.card p{line-height:1.45}
+.card a{color:#1a4fd6;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.im{background:#fff;border-radius:10px;overflow:hidden;color:#222;text-decoration:none;font-size:12px}
+.im img{width:100%;height:120px;object-fit:cover;display:block}
+.im span{display:block;padding:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:#222;color:#fff;padding:10px 22px;border-radius:24px;opacity:0;transition:.3s;z-index:99;font:700 15px Arial}
+#toast.on{transform:translate(-50%,0);opacity:1}
+#top{position:fixed;right:18px;bottom:18px;width:46px;height:46px;border-radius:50%;border:3px solid #000;background:#ffc60f;font-size:20px;cursor:pointer;display:none;z-index:50}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #ff0;outline-offset:2px}
+dialog label{display:block;margin:10px 0}
+dialog select,dialog input[type=range]{margin-left:8px}
+dialog .row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.fv{display:flex;gap:8px;align-items:center;margin:6px 0}
+.fv a{flex:1;color:#1a4fd6}
+html.dark{filter:invert(1) hue-rotate(180deg);background:#fff}
+html.dark img,html.dark svg,html.dark mark{filter:invert(1) hue-rotate(180deg)}
+@media print{header,.eng,.yt,.bar,.lupa,.tools,#top{display:none!important}body{background:#fff}}
+dialog{margin:auto;border:4px solid #000;border-radius:16px;padding:26px;max-width:420px;background:#fff;color:#222;font-family:Arial,sans-serif}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h2{margin-bottom:10px}
+dialog p{margin-bottom:10px;line-height:1.4}
+dialog button{padding:8px 20px;font:700 16px Arial;cursor:pointer;border:3px solid #000;background:#ffc60f;border-radius:8px}
+
+/* ===== TEMAS ===== */
+[data-theme=viejo]{--head:#c0c0c0;--head-line:#000080;--body:#008080;--bar-radius:0;--bar-border:#555;--font:"Times New Roman",Times,serif;--t1:#000080;--t2:#800000;--link:#000080;--head-fg:#000}
+[data-theme=viejo] header{border-bottom-style:solid;box-shadow:inset 2px 2px #fff,inset -2px -2px #808080}
+[data-theme=viejo] .bar{box-shadow:inset 3px 3px #808080,inset -3px -3px #fff;border:3px solid #c0c0c0;background:#fff}
+[data-theme=viejo] .status{color:#ff0;font-family:"Courier New",monospace}
+[data-theme=viejo] .eng svg,[data-theme=viejo] .yt svg{filter:saturate(.6)}
+
+[data-theme=aero]{--head:rgba(255,255,255,.35);--head-line:rgba(255,255,255,.7);--bar-bg:rgba(255,255,255,.55);--bar-border:rgba(255,255,255,.9);--bar-shadow:0 8px 30px rgba(0,60,120,.4),inset 0 0 20px rgba(255,255,255,.7);--font:"Segoe UI",Tahoma,Arial,sans-serif;--t1:#fff;--t2:#d6f3ff;--link:#fff;--head-fg:#fff}
+[data-theme=aero] body,body[data-theme=aero]{background:radial-gradient(circle at 20% 10%,#9be3ff,transparent 40%),radial-gradient(circle at 80% 80%,#5fd6a0,transparent 45%),linear-gradient(135deg,#1e88e5,#4fc3f7)}
+[data-theme=aero] header{backdrop-filter:blur(10px);box-shadow:0 4px 18px rgba(0,60,120,.35)}
+[data-theme=aero] h1{text-shadow:0 0 10px #036,0 2px 4px rgba(0,0,0,.4)}
+[data-theme=aero] .about{text-shadow:0 1px 4px #036}
+[data-theme=aero] .bar{backdrop-filter:blur(8px)}
+
+[data-theme=yahoo]{--head:#6001d2;--head-line:#a040ff;--body:#fff;--bar-bg:#fff;--bar-border:#6001d2;--bar-radius:30px;--t1:#fff;--t2:#ffe14d;--link:#fff;--head-fg:#fff;--text:#222}
+[data-theme=yahoo] .status{color:#6001d2;text-shadow:none}
+[data-theme=yahoo] h1{font-style:italic}
+
+[data-theme=minimalista]{--head:#fff;--head-line:#e5e5e5;--body:#fafafa;--bar-bg:#fff;--bar-border:#ddd;--bar-radius:10px;--t1:#222;--t2:#888;--link:#444;--head-fg:#222;--font:"Helvetica Neue",Arial,sans-serif}
+[data-theme=minimalista] header{border-bottom-width:1px}
+[data-theme=minimalista] h1{font-weight:300}
+[data-theme=minimalista] .bar{border-width:1px}
+[data-theme=minimalista] .status{color:#999;text-shadow:none}
+[data-theme=minimalista] .eng svg,[data-theme=minimalista] .yt svg{filter:grayscale(1);opacity:.6}
+[data-theme=minimalista] .eng button:hover svg,[data-theme=minimalista] .yt:hover svg{filter:none;opacity:1}
+
+[data-theme=google]{--head:#fff;--head-line:#ebebeb;--body:#fff;--bar-bg:#fff;--bar-border:#dfe1e5;--bar-radius:40px;--bar-shadow:0 1px 6px rgba(32,33,36,.28);--link:#4285f4;--head-fg:#222}
+[data-theme=google] header{border-bottom-width:1px}
+[data-theme=google] h1{background:linear-gradient(90deg,#4285f4 0 25%,#ea4335 25% 50%,#fbbc05 50% 75%,#34a853 75%);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-theme=google] h1 .a,[data-theme=google] h1 .b{color:inherit}
+[data-theme=google] .bar{border-width:1px}
+[data-theme=google] .status{color:#70757a;text-shadow:none}
+
+@media(max-width:800px){
+  main{grid-template-columns:1fr;grid-template-rows:auto}
+  .eng{flex-direction:row;grid-row:auto;justify-content:center;order:2;padding:0}
+  .eng svg{width:80px;height:80px}
+  .center{grid-column:1;order:1}
+  .yt{grid-column:1;grid-row:auto;order:3;margin:0;justify-self:center}
+  .yt svg{width:100px;height:70px}
+  .about{margin-left:0}
+}
+</style>
+<style>
+/* ===== Módulo extra ===== */
+.rtools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+.rtools[hidden],
+.res[hidden] { display: none !important; }
+.rtools input,
+.rtools select {
+  font: 700 15px var(--font);
+  padding: 7px 12px;
+  border-radius: 20px;
+  border: 2px solid rgba(0, 0, 0, .55);
+  background: #fff;
+  color: #222;
+}
+.rtools input { flex: 1; min-width: 140px; }
+.res.vis h3 a { color: #7b3fa0; }
+.compact .res { padding: 6px 12px; }
+.compact .res p,
+.compact .res small { display: none; }
+.wid {
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, .22);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+.toolrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.calt { border-collapse: collapse; margin-top: 8px; }
+.calt th, .calt td { width: 38px; height: 32px; text-align: center; font-size: 14px; }
+.calt td.hoy { background: #ffc60f; border-radius: 50%; font-weight: 900; }
+.swatch { width: 90px; height: 90px; border-radius: 12px; border: 3px solid #222; flex: none; }
+.pwd { font: 700 18px "Courier New", monospace; word-break: break-all; }
+.todo { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+.todo.done span { text-decoration: line-through; color: #888; }
+.todo span { flex: 1; }
+dialog textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 10px;
+  font: 16px Arial, sans-serif;
+  border: 2px solid #222;
+  border-radius: 8px;
+  resize: vertical;
+}
+dialog input[type=text] {
+  width: 100%;
+  padding: 8px 12px;
+  font: 16px Arial, sans-serif;
+  border: 2px solid #222;
+  border-radius: 8px;
+}
+.stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #ddd; }
+.party header { animation: rb 2s linear infinite; }
+@keyframes rb { to { filter: hue-rotate(360deg); } }
+.calc {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  background: #222;
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+.calc-title { font: 900 16px var(--font); letter-spacing: .5px; color: #ffc60f; margin-bottom: 8px; }
+.calc-expr { min-height: 24px; text-align: right; font: 18px "Courier New", monospace; color: #aaa; word-break: break-all; }
+.calc-res { text-align: right; font: 900 38px "Courier New", monospace; margin: 4px 0 10px; word-break: break-all; }
+.calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.calc-keys button { font: 700 22px Arial, sans-serif; padding: 12px 0; border-radius: 10px; border: 0; cursor: pointer; background: #444; color: #fff; }
+.calc-keys button:active { transform: scale(.95); }
+.calc-keys .op { background: #ff7f27; }
+.calc-keys .eq { background: #22b14c; }
+.calc-keys .fn { background: #666; }
+.calc-hist { margin-top: 10px; font: 14px "Courier New", monospace; color: #bbb; }
+.calc-hist div { cursor: pointer; padding: 2px 0; }
+.calc-hist div:hover { color: #fff; }
+/* ===== Idiomas y página de resultados (estilo Google) ===== */
+.langs { display: flex; gap: 4px; margin-left: auto; }
+.langs + .tools { margin-left: 0; }
+.langs button {
+  font: 800 14px Arial, sans-serif;
+  padding: 6px 10px;
+  border-radius: 14px;
+  border: 2px solid rgba(0, 0, 0, .5);
+  background: rgba(255, 255, 255, .6);
+  color: #222;
+  cursor: pointer;
+}
+.langs button.on { background: #222; color: #fff; }
+/* Colores de la página de resultados según el tema activo */
+body{--s-text:#fff;--s-title:#fff;--s-vis:#ffe58a;--s-url:#ffc60f;--s-muted:#e8f7ff;--s-accent:#ffc60f;--s-line:rgba(255,255,255,.4);--s-sh:0 1px 2px rgba(0,0,0,.35)}
+body[data-theme=viejo]{--s-title:#ffff66;--s-vis:#ffc8ff;--s-url:#c0c0c0;--s-muted:#e0e0e0;--s-accent:#ffff66}
+body[data-theme=aero]{--s-title:#fff;--s-vis:#d6f3ff;--s-url:#d6f3ff;--s-accent:#fff}
+body[data-theme=yahoo]{--s-text:#222;--s-title:#6001d2;--s-vis:#a040ff;--s-url:#4a2a8a;--s-muted:#666;--s-accent:#6001d2;--s-line:#e0d0f5;--s-sh:none}
+body[data-theme=minimalista]{--s-text:#333;--s-title:#222;--s-vis:#888;--s-url:#888;--s-muted:#888;--s-accent:#222;--s-line:#e5e5e5;--s-sh:none}
+body[data-theme=google]{--s-text:#4d5156;--s-title:#4285f4;--s-vis:#a142f4;--s-url:#34a853;--s-muted:#70757a;--s-accent:#4285f4;--s-line:#dadce0;--s-sh:none}
+
+body.serp { color: var(--s-text); }
+body.serp main { grid-template-columns: 1fr; padding: 14px clamp(14px, 6vw, 100px) 40px; align-items: start; }
+body.serp .eng, body.serp .yt, body.serp .lupa { display: none; }
+body.serp .center { grid-column: 1; max-width: 700px; width: 100%; align-items: stretch; gap: 10px; padding: 0; }
+body.serp .barwrap { max-width: 690px; }
+body.serp .bar {
+  height: 46px;
+  background: var(--bar-bg);
+  border: 2px solid var(--bar-border);
+  border-radius: 24px;
+  padding: 0 16px;
+  box-shadow: 0 1px 6px rgba(32, 33, 36, .28);
+}
+body.serp .bar input { font: 400 17px Arial, sans-serif; color: #202124; }
+body.serp .status { color: var(--s-muted); text-shadow: var(--s-sh); font: 400 14px Arial, sans-serif; }
+body.serp .tabs { gap: 0; border-bottom: 1px solid var(--s-line); }
+body.serp .tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--s-muted);
+  text-shadow: var(--s-sh);
+  font: 400 14px Arial, sans-serif;
+  padding: 10px 14px;
+}
+body.serp .tabs button.on { color: var(--s-accent); border-bottom-color: var(--s-accent); background: none; font-weight: 700; }
+body.serp .rtools input, body.serp .rtools select, body.serp .rtools .pill {
+  font: 400 13px Arial, sans-serif;
+  border: 1px solid var(--s-line);
+  box-shadow: none;
+}
+body.serp .results { gap: 22px; }
+body.serp .res {
+  display: flex;
+  flex-direction: column;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  color: var(--s-text);
+  text-shadow: var(--s-sh);
+}
+body.serp .res:hover { transform: none; box-shadow: none; }
+body.serp .res .src { order: 0; background: none; padding: 0; color: var(--s-muted); font-weight: 400; align-self: flex-start; }
+body.serp .res small { order: 1; color: var(--s-url); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.serp .res h3 { order: 2; font: 400 20px Arial, sans-serif; margin: 2px 0; }
+body.serp .res h3 a { color: var(--s-title); }
+body.serp .res.vis h3 a { color: var(--s-vis); }
+body.serp .res p { order: 3; color: var(--s-text); opacity: .92; font-size: 14px; line-height: 1.58; }
+body.serp .res.off .src { color: var(--s-accent); font-weight: 700; }
+body.serp .res mark { background: none; font-weight: 700; color: inherit; }
+body.serp .acts { position: absolute; right: 0; top: 0; }
+body.serp .acts button { color: var(--s-text); }
+body.serp .card { border: 0; border-left: 6px solid var(--s-accent); border-radius: 8px; }
+body.serp #more { align-self: flex-start; }
+</style>
+</head>
+<body data-theme="default">
+
+<header>
+  <button class="brand" id="logo" title="Volver al estilo original">
+    <svg viewBox="0 0 100 100"><circle cx="38" cy="38" r="30" fill="none" stroke="#22b14c" stroke-width="12"/><path d="M38 8a30 30 0 0 1 30 30" fill="none" stroke="#b5e61d" stroke-width="12"/><circle cx="38" cy="38" r="22" fill="#99d9ea"/><path d="M20 30a22 22 0 0 1 22-14l-16 26z" fill="#00a2e8"/><path d="M60 62l28 28" stroke="#b97a57" stroke-width="12" stroke-linecap="round"/></svg>
+    <h1><span class="a">OSC</span> <span class="b">Search</span></h1>
+  </button>
+  <div class="themes">
+    <button class="t-viejo" data-t="viejo">Viejo</button>
+    <button class="t-aero" data-t="aero">AERO</button>
+    <button class="t-yahoo" data-t="yahoo">Yahoo!</button>
+    <button class="t-mini" data-t="minimalista">Minimalista</button>
+    <button class="t-google" data-t="google">Google</button>
+  </div>
+  <div class="langs" role="group" aria-label="Idioma">
+    <button data-l="es">ES</button>
+    <button data-l="en">EN</button>
+    <button data-l="pt">PT</button>
+  </div>
+  <div class="tools">
+    <button id="favBtn" title="Favoritos" aria-label="Favoritos">⭐</button>
+    <button id="rndBtn" title="Interfaz aleatoria" aria-label="Interfaz aleatoria">🎨</button>
+    <button id="darkBtn" title="Modo oscuro" aria-label="Modo oscuro">🌙</button>
+    <button id="setBtn" title="Ajustes" aria-label="Ajustes">⚙️</button>
+  </div>
+  <button class="about" id="aboutBtn">
+    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#99d9ea" stroke="#888" stroke-width="8"/><circle cx="50" cy="30" r="8" fill="#fff"/><rect x="43" y="42" width="14" height="32" rx="7" fill="#fff"/></svg>
+    Acerca de
+  </button>
+</header>
+
+<main>
+  <div class="eng">
+    <button data-e="google">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    </button>
+    <button data-e="github">
+      <svg viewBox="-3 -3 22 22"><circle cx="8" cy="8" r="10.5" fill="#fff"/><path fill="#000" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    </button>
+  </div>
+
+  <div class="center" role="search">
+    <button class="lupa" id="lupa" aria-label="Buscar">
+      <svg viewBox="0 0 100 100"><circle cx="42" cy="38" r="26" fill="none" stroke="#3f48cc" stroke-width="9"/><path d="M60 58l26 26" stroke="#3f48cc" stroke-width="10" stroke-linecap="round"/></svg>
+    </button>
+    <div class="barwrap">
+      <div class="bar"><input id="q" type="text" placeholder="Busca en internet...." autocomplete="off" aria-label="Buscar en internet" autofocus><button class="ib" id="clr" aria-label="Borrar" hidden>✕</button><button class="ib" id="mic" aria-label="Buscar por voz">🎤</button></div>
+      <div class="sug" id="sug" hidden></div>
+    </div>
+    <div class="status" id="status" aria-live="polite">Escribe algo y presiona Enter</div>
+    <div id="home">
+      <div class="clock" id="clock"></div>
+      <div class="greet" id="greet"></div>
+      <div class="chips" id="chips"></div>
+      <div class="quick" id="quick"></div>
+      <button class="pill" id="surprise">🎲 Sorpréndeme</button>
+    </div>
+    <div class="tabs" id="tabs" hidden></div>
+    <div class="card" id="card" hidden></div>
+    <div class="results" id="results"></div>
+    <button class="pill" id="more" hidden>Cargar más</button>
+  </div>
+
+  <button class="yt" data-e="youtube" >
+    <svg viewBox="0 0 150 105"><rect x="2" y="4" width="146" height="97" rx="28" fill="#ed1c24"/><path d="M60 28l44 24.5L60 77z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/></svg>
+  </button>
+</main>
+
+<dialog id="about">
+  <h2>Acerca de OSC Search</h2>
+  <p>OSC Search es un buscador hecho en un solo archivo HTML. Escribe algo y los resultados aparecen aquí mismo; al tocar uno, se abre en una pestaña nueva.</p>
+  <p>Si escribes una dirección web, como wikipedia.org, se abre directamente ese sitio.</p>
+  <p>Los botones Viejo, AERO, Yahoo!, Minimalista y Google cambian la interfaz. Toca el logo para volver al inicio.</p>
+  <p>Atajos: / o Ctrl+K enfocan la barra, Alt+0..5 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda.</p>
+  <button id="closeAbout">Cerrar</button>
+</dialog>
+
+<dialog id="favd"><h2>⭐ Favoritos</h2><div id="favList"></div><button data-close>Cerrar</button></dialog>
+<dialog id="set"><h2>⚙️ Ajustes</h2>
+  <label><input type="checkbox" id="sHist"> Guardar historial</label>
+  <label><input type="checkbox" id="sNew"> Abrir resultados en pestaña nueva</label>
+  <label style="display:none">Resultados por búsqueda <select id="sPer"><option>5</option><option>10</option><option>20</option></select></label>
+  <label>Tamaño <input type="range" id="sFs" min="80" max="140" step="10"></label>
+  <label>Color de fondo (estilo original) <input type="color" id="sBg" value="#00a2e8"></label>
+  <div class="row"><button id="xExp">Exportar</button><button id="xImp">Importar</button><button id="xHist">Borrar historial</button><button id="xRst">Restablecer</button></div>
+  <input type="file" id="impFile" accept=".json" hidden>
+  <button data-close>Cerrar</button></dialog>
+<div id="toast" role="status"></div>
+<button id="top" aria-label="Volver arriba">↑</button>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const LS={g(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const DEF={lang:"es",hist:true,newtab:true,per:10,fs:100,bg:"",dark:false,theme:"default"};
+const DQ=[{n:"YouTube",u:"https://www.youtube.com/"},{n:"Wikipedia",u:"https://es.wikipedia.org/"},{n:"GitHub",u:"https://github.com/"},{n:"CodePen",u:"https://codepen.io/"},{n:"Maps",u:"https://maps.google.com/"}];
+let cfg=Object.assign({},DEF,LS.g("osc.cfg",{})),hist=LS.g("osc.hist",[]),favs=LS.g("osc.favs",[]),quick=LS.g("osc.quick",DQ);
+const save=()=>{LS.s("osc.cfg",cfg);LS.s("osc.hist",hist);LS.s("osc.favs",favs);LS.s("osc.quick",quick)};
+let LANG=(LS.g("osc.cfg",{}).lang)||"es";
+const LOC=()=>({es:"es-MX",en:"en-US",pt:"pt-BR"}[LANG]||"es-MX");
+const L2=()=>LANG==="en"?"es":"en";
+const SITES={google:{name:"Google",url:"https://www.google.com/"},github:{name:"GitHub",url:"https://github.com/"},youtube:{name:"YouTube",url:"https://www.youtube.com/"}};
+const BANGS={g:"https://www.google.com/search?q=",yt:"https://www.youtube.com/results?search_query=",gh:"https://github.com/search?q=",w:"https://"+LANG+".wikipedia.org/w/index.php?search=",ddg:"https://duckduckgo.com/?q="};
+const THEMES=["viejo","aero","yahoo","minimalista","google"];
+const q=$("#q"),status=$("#status"),tabsBox=$("#tabs"),resBox=$("#results"),card=$("#card"),sug=$("#sug"),more=$("#more");
+let data={wikies:[],wikien:[],gh:[],img:[],failed:false},tab="all",token=0,lastQ="",limit=10,cur=[],ms=0,sugI=-1,sT;
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rx=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+const J=async u=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()};
+const openTab=u=>window.open(u,"_blank","noopener,noreferrer");
+const looksLikeUrl=t=>!/\s/.test(t)&&!/^[^/:]+\.(js|jsx|ts|tsx|py|rb|rs|md|json|css|html|txt|exe|jar)$/i.test(t)&&(/^https?:\/\//i.test(t)||/^([a-z0-9-]+\.)+[a-z]{2,}(\/.*)?$/i.test(t));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2200)}
+const setFav=e=>{$("#fav").href="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">'+e+'</text></svg>')};
+
+/* ----- Fuentes ----- */
+const wiki=async(l,t,n)=>(await J("https://"+l+".wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srlimit="+n+"&srsearch="+encodeURIComponent(t))).query.search.map(x=>({src:"Wikipedia "+l.toUpperCase(),title:x.title,url:"https://"+l+".wikipedia.org/wiki/"+encodeURIComponent(x.title.replace(/ /g,"_")),desc:new DOMParser().parseFromString(x.snippet,"text/html").body.textContent+"…"}));
+const gh=async(t,n)=>(await J("https://api.github.com/search/repositories?per_page="+n+"&q="+encodeURIComponent(t))).items.map(x=>({src:"GitHub",title:x.full_name,url:x.html_url,desc:(x.description||({es:"Sin descripción",en:"No description",pt:"Sem descrição"}[LANG]))+"  ·  ★ "+x.stargazers_count.toLocaleString(LOC())+"  ·  🍴 "+x.forks_count.toLocaleString(LOC())+(x.language?"  ·  "+x.language:"")}));
+const IMG_TOTAL=50;
+const imgs=async(t)=>{
+  const base="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=50&gsrsearch="+encodeURIComponent(t)+"&prop=imageinfo&iiprop=url%7Cmime&iiurlwidth=320&format=json&origin=*";
+  const out=[],seen=new Set();let off=0;
+  for(let pg=0;pg<4&&out.length<IMG_TOTAL;pg++){
+    let j;
+    try{j=await J(base+(off?"&gsroffset="+off:""))}catch(e){if(!pg)throw e;break}
+    Object.values((j.query||{}).pages||{}).sort((x,y)=>x.index-y.index)
+      .filter(p=>p.imageinfo&&p.imageinfo[0].thumburl&&/^image\//.test(p.imageinfo[0].mime||""))
+      .forEach(p=>{const u=p.imageinfo[0].descriptionurl;if(!seen.has(u)){seen.add(u);out.push({src:"Commons",title:p.title.replace(/^(Archivo|File):/,""),url:u,thumb:p.imageinfo[0].thumburl})}});
+    if(!j.continue)break;off=j.continue.gsroffset;
+  }
+  return out.slice(0,IMG_TOTAL);
+};
+
+/* ----- Sitios oficiales ----- */
+const OFFICIAL=[
+  ["YouTube","https://www.youtube.com/",["youtube","you tube"]],
+  ["WhatsApp","https://www.whatsapp.com/",["whatsapp","whats app"]],
+  ["Discord","https://discord.com/",["discord"]],
+  ["Facebook","https://www.facebook.com/",["facebook","face book"]],
+  ["Steam","https://store.steampowered.com/",["steam"]],
+  ["TikTok","https://www.tiktok.com/",["tiktok","tik tok"]],
+  ["Google Messages","https://messages.google.com/",["google messages","google mensajes","mensajes de google","messages google"]],
+  ["Claude","https://claude.ai/",["claude","claude ai"]],
+  ["Google Gemini","https://gemini.google.com/",["google gemini","gemini","gemini ai"]],
+  ["ChatGPT","https://chatgpt.com/",["chatgpt","chat gpt","chatgpt openai"]],
+  ["GitHub","https://github.com/",["github","git hub"]],
+  ["GitLab","https://gitlab.com/",["gitlab","git lab"]],
+  ["HP","https://www.hp.com/",["hp","hewlett packard","hewlett-packard"]],
+  ["Google","https://www.google.com/",["google"]],
+  ["Apple","https://www.apple.com/",["apple"]],
+  ["Samsung","https://www.samsung.com/",["samsung"]],
+  ["Wikipedia","https://www.wikipedia.org/",["wikipedia","wikipedia org","wiki pedia","wikipedia enciclopedia"]],
+  ["Microsoft","https://www.microsoft.com/",["microsoft","micro soft"]],
+  ["CodePen","https://codepen.io/",["codepen","code pen"]]
+];
+function officialFor(t){
+  const n=String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ")
+    .replace(/\b(pagina|sitio|web|oficial|official|site|website|de|la|el|the|page|home|inicio|pagina oficial)\b/g," ").replace(/\s+/g," ").trim();
+  if(!n)return null;
+  const o=OFFICIAL.find(x=>x[2].includes(n));
+  if(!o)return null;
+  const lab={es:"Sitio web oficial",en:"Official website",pt:"Site oficial"}[LANG]||"Sitio web oficial";
+  return {src:"✔ "+lab,title:o[0],url:o[1],desc:lab+" · "+o[1].replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,""),off:true};
+}
+
+/* ----- Respuestas instantáneas ----- */
+function instant(t){
+  const l=t.toLowerCase();
+  if(/^(hora|reloj|fecha|time)$/.test(l))return "🕒 "+new Date().toLocaleString(LOC(),{dateStyle:"full",timeStyle:"medium"});
+  if(l==="dado"||l==="dice")return "🎲 "+(1+Math.floor(Math.random()*6));
+  if(l==="moneda"||l==="coin"||l==="moeda")return "🪙 "+(Math.random()<.5?"Cara":"Cruz");
+  if(/^[\d\s+\-*/().,%^]+$/.test(t)&&/[+\-*/%^]/.test(t)&&/\d/.test(t)){try{const v=Function('"use strict";return ('+t.replace(/\^/g,"**").replace(/,/g,".").replace(/(\d)%/g,"($1/100)")+')')();if(isFinite(v))return "🧮 "+t+" = "+(+v.toFixed(10))}catch(e){}}
+  return null;
+}
+const showCard=h=>{card.innerHTML=h;card.hidden=false};
+async function summary(my){const w=data.wikies[0];if(!w||!card.hidden)return;try{const s=await J("https://"+LANG+".wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(w.title.replace(/ /g,"_")));if(my!==token||!card.hidden||s.type!=="standard"||!s.extract)return;showCard((s.thumbnail?'<img src="'+esc(s.thumbnail.source)+'" alt="">':"")+'<div><h3>'+esc(s.title)+'</h3><p>'+esc(s.extract.slice(0,380))+(s.extract.length>380?"…":"")+'</p><a href="'+esc(s.content_urls.desktop.page)+'" target="_blank" rel="noopener noreferrer">Leer más en Wikipedia</a></div>')}catch(e){}}
+
+/* ----- Buscar ----- */
+function home(){token++;lastQ="";q.value="";upd();$("#home").hidden=false;tabsBox.hidden=true;card.hidden=true;resBox.innerHTML="";more.hidden=true;sug.hidden=true;status.textContent="Escribe algo y presiona Enter";document.title="OSC Search";setFav("🔍");try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
+function search(t){
+  t=(t==null?q.value:t).trim();q.value=t;sug.hidden=true;upd();
+  if(!t)return home();
+  const m=t.match(/^!(\w+)\s+(.+)/);if(m&&BANGS[m[1].toLowerCase()])return openTab(BANGS[m[1].toLowerCase()]+encodeURIComponent(m[2]));
+  if(looksLikeUrl(t))return openTab(/^https?:\/\//i.test(t)?t:"https://"+t);
+  if(cfg.hist){hist=[t,...hist.filter(x=>x!==t)].slice(0,30);save()}
+  document.title=t+" - OSC Search";setFav("🔎");
+  try{history.replaceState(null,"","#q="+encodeURIComponent(t))}catch(e){}
+  card.hidden=true;const a=instant(t);if(a)showCard("<div><h3>"+esc(a)+"</h3></div>");
+  run(t,false);
+}
+async function run(t,keep){
+  limit=50;
+  const my=++token;lastQ=t;$("#home").hidden=true;
+  if(!keep)resBox.innerHTML='<div class="res sk"></div>'.repeat(3);
+  status.textContent="Buscando...";const t0=performance.now();
+  const r=await Promise.allSettled([wiki(LANG,t,limit),wiki(L2(),t,limit),gh(t,limit),imgs(t,limit)]);
+  if(my!==token)return;
+  ["wikies","wikien","gh","img"].forEach((k,i)=>data[k]=r[i].status==="fulfilled"?r[i].value:[]);
+  data.failed=r.every(x=>x.status==="rejected");ms=Math.round(performance.now()-t0);
+  tabsBox.hidden=false;render();summary(my);
+}
+function render(){
+  const D=data,tg=cfg.newtab?'target="_blank" rel="noopener noreferrer"':"";
+  const O=officialFor(lastQ),all=Math.min(100,D.wikies.length+D.wikien.length+D.gh.length+(O?1:0));
+  tabsBox.innerHTML=[["all","Todo",all],["wikies","Wikipedia "+LANG.toUpperCase(),D.wikies.length],["wikien","Wikipedia "+L2().toUpperCase(),D.wikien.length],["gh","GitHub",D.gh.length],["img","Imágenes",D.img.length]].map(x=>'<button data-tab="'+x[0]+'" class="'+(tab===x[0]?"on":"")+'">'+x[1]+" ("+x[2]+")</button>").join("");
+  if(tab==="all"){cur=[];for(let i=0;i<50&&cur.length<100;i++)["wikies","gh","wikien"].forEach(k=>cur.length<100&&D[k][i]&&cur.push(D[k][i]));if(O){cur=cur.filter(r=>r.url!==O.url);cur.unshift(O);cur=cur.slice(0,100)}}else cur=D[tab];
+  status.textContent=D.failed?"No se pudo conectar. Revisa tu internet.":!cur.length?'No encontré resultados para "'+lastQ+'"':cur.length+' resultados para "'+lastQ+'" ('+ms+" ms)";
+  resBox.className="results"+(tab==="img"?" grid":"");
+  const terms=lastQ.split(/\s+/).filter(x=>x.length>1),re=terms.length?new RegExp("("+terms.map(rx).join("|")+")","gi"):null,hl=s=>re?String(s).split(re).map((p,i)=>i%2?"<mark>"+esc(p)+"</mark>":esc(p)).join(""):esc(s);
+  resBox.innerHTML=cur.map((r,i)=>tab==="img"?'<a class="im" href="'+esc(r.url)+'" '+tg+'><img loading="lazy" src="'+esc(r.thumb)+'" alt="'+esc(r.title)+'"><span>'+esc(r.title)+'</span></a>':
+    '<div class="res'+(r.off?" off":"")+'" style="animation-delay:'+Math.min(i,10)*40+'ms"><span class="src">'+r.src+'</span><span class="acts"><button data-fav="'+i+'" aria-label="Favorito">'+(isFav(r.url)?"★":"☆")+'</button><button data-cp="'+i+'" aria-label="Copiar enlace">🔗</button></span><h3><a href="'+esc(r.url)+'" '+tg+'>'+esc(r.title)+'</a></h3><small>'+esc(r.url)+'</small><p>'+hl(r.desc)+'</p></div>').join("");
+  const mx=tab==="all"?Math.max(D.wikies.length,D.wikien.length,D.gh.length):cur.length;more.hidden=!cur.length||limit>=50||tab==="img"||mx<limit;
+}
+tabsBox.onclick=e=>{const b=e.target.closest("button");if(b){tab=b.dataset.tab;render()}};
+more.onclick=()=>{limit+=cfg.per;run(lastQ,true)};
+resBox.onclick=e=>{const b=e.target.closest("button");if(!b)return;const r=cur[b.dataset.fav!=null?b.dataset.fav:b.dataset.cp];
+  if(b.dataset.fav!=null){toggleFav(r);b.textContent=isFav(r.url)?"★":"☆"}
+  else (navigator.clipboard?navigator.clipboard.writeText(r.url):Promise.reject()).then(()=>toast("Enlace copiado"),()=>toast("No se pudo copiar"))};
+
+/* ----- Favoritos ----- */
+const isFav=u=>favs.some(f=>f.url===u);
+function toggleFav(r){const i=favs.findIndex(f=>f.url===r.url);if(i<0){favs.push({title:r.title,url:r.url,src:r.src});toast("Añadido a favoritos ⭐")}else{favs.splice(i,1);toast("Quitado de favoritos")}save()}
+function drawFavs(){$("#favList").innerHTML=favs.length?favs.map((f,i)=>'<div class="fv"><a href="'+esc(f.url)+'" target="_blank" rel="noopener noreferrer">'+esc(f.title)+'</a><small>'+esc(f.src)+'</small><button data-rm="'+i+'" aria-label="Quitar">✕</button></div>').join(""):"<p>Aún no tienes favoritos. Toca ☆ en un resultado.</p>"}
+$("#favList").onclick=e=>{const b=e.target.closest("[data-rm]");if(b){favs.splice(+b.dataset.rm,1);save();drawFavs();render&&cur.length&&render()}};
+$("#favBtn").onclick=()=>{drawFavs();$("#favd").showModal()};
+
+/* ----- Sugerencias ----- */
+function showSug(l){sugI=-1;sug.innerHTML=l.map(x=>'<div data-s="'+esc(x.t)+'">'+(x.h?"🕘 ":"🔎 ")+esc(x.t)+"</div>").join("");sug.hidden=!l.length}
+const upd=()=>{$("#clr").hidden=!q.value};
+q.addEventListener("input",()=>{upd();clearTimeout(sT);const t=q.value.trim();if(!t)return showSug(hist.slice(0,6).map(x=>({t:x,h:1})));
+  sT=setTimeout(async()=>{let l=hist.filter(h=>h.toLowerCase().includes(t.toLowerCase())).slice(0,3).map(x=>({t:x,h:1}));
+    try{const j=await J("https://"+LANG+".wikipedia.org/w/api.php?action=opensearch&limit=6&format=json&origin=*&search="+encodeURIComponent(t));l=l.concat(j[1].filter(x=>!l.some(y=>y.t===x)).map(x=>({t:x})))}catch(e){}
+    if(q.value.trim()===t)showSug(l)},180)});
+q.addEventListener("focus",()=>{if(!q.value&&hist.length)showSug(hist.slice(0,6).map(x=>({t:x,h:1})))});
+q.addEventListener("blur",()=>setTimeout(()=>sug.hidden=true,150));
+sug.onmousedown=e=>{const d=e.target.closest("[data-s]");if(d){e.preventDefault();search(d.dataset.s)}};
+q.addEventListener("keydown",e=>{
+  const it=[...sug.children];
+  if((e.key==="ArrowDown"||e.key==="ArrowUp")&&it.length&&!sug.hidden){e.preventDefault();sugI=(sugI+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;it.forEach((x,i)=>x.classList.toggle("on",i===sugI));q.value=it[sugI].dataset.s;upd()}
+  else if(e.key==="Enter"){if(e.ctrlKey&&cur[0])openTab(cur[0].url);else search()}
+  else if(e.key==="Escape"){if(!sug.hidden)sug.hidden=true;else if(q.value)home()}
+});
+$("#lupa").onclick=()=>search();
+$("#clr").onclick=()=>{home();q.focus()};
+
+/* ----- Voz ----- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition,mic=$("#mic");
+if(!SR)mic.hidden=true;else mic.onclick=()=>{const r=new SR();r.lang=LOC();r.onresult=e=>search(e.results[0][0].transcript);r.onerror=()=>toast("No pude escucharte");r.onend=()=>mic.classList.remove("rec");mic.classList.add("rec");r.start()};
+
+/* ----- Inicio ----- */
+function tick(){const d=new Date(),h=d.getHours();$("#clock").textContent=d.toLocaleTimeString(LOC(),{hour:"2-digit",minute:"2-digit"});$("#greet").textContent=(h<6?"🌙 Buenas noches":h<12?"☀️ Buenos días":h<19?"🌤️ Buenas tardes":"🌙 Buenas noches")+" · "+d.toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"})}
+tick();setInterval(tick,1000);
+const IDEAS=["Inteligencia artificial","Sistema solar","Python","JavaScript","Linux","Océano","Historia de México","Videojuegos","Volcanes","Música","Robótica","Dinosaurios"];
+$("#chips").innerHTML=IDEAS.sort(()=>Math.random()-.5).slice(0,5).map(x=>'<button class="pill">'+x+"</button>").join("");
+$("#chips").onclick=e=>{if(e.target.matches("button"))search(e.target.textContent)};
+function drawQuick(){$("#quick").innerHTML=quick.map((x,i)=>'<span class="pill ql"><a href="'+esc(x.u)+'" target="_blank" rel="noopener noreferrer">'+esc(x.n)+'</a><button data-rq="'+i+'" aria-label="Quitar">×</button></span>').join("")+'<button class="pill" id="addQ" aria-label="Agregar sitio">＋</button>'}
+$("#quick").onclick=e=>{const r=e.target.closest("[data-rq]");
+  if(r){quick.splice(+r.dataset.rq,1);save();drawQuick()}
+  else if(e.target.closest("#addQ")){const n=prompt("Nombre del sitio:");if(!n)return;let u=prompt("Dirección (ej. youtube.com):");if(!u)return;if(!/^https?:\/\//i.test(u))u="https://"+u;quick.push({n:n.slice(0,20),u});save();drawQuick()}};
+$("#surprise").onclick=async()=>{const w=window.open("about:blank","_blank");try{const s=await J("https://"+LANG+".wikipedia.org/api/rest_v1/page/random/summary");w.location=s.content_urls.desktop.page}catch(e){if(w)w.close();toast("No se pudo cargar")}};
+$$("[data-e]").forEach(b=>{const s=SITES[b.dataset.e];b.title="Ir a "+s.name;b.addEventListener("click",()=>openTab(s.url))});
+
+/* ----- Temas y ajustes ----- */
+function applyBg(){const b=document.body;cfg.bg&&b.dataset.theme==="default"?b.style.setProperty("--body",cfg.bg):b.style.removeProperty("--body")}
+function setTheme(t){document.body.dataset.theme=t;$$(".themes button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));cfg.theme=t;save();applyBg()}
+function apply(){document.documentElement.classList.toggle("dark",!!cfg.dark);$("main").style.zoom=cfg.fs/100;setTheme(cfg.theme||"default")}
+$$(".themes button").forEach(b=>b.addEventListener("click",()=>setTheme(b.dataset.t)));
+$("#logo").onclick=()=>{setTheme("default");home()};
+$("#rndBtn").onclick=()=>setTheme(THEMES[Math.floor(Math.random()*THEMES.length)]);
+$("#darkBtn").onclick=()=>{cfg.dark=!cfg.dark;save();apply()};
+$("#setBtn").onclick=()=>{$("#sHist").checked=cfg.hist;$("#sNew").checked=cfg.newtab;$("#sPer").value=cfg.per;$("#sFs").value=cfg.fs;$("#sBg").value=cfg.bg||"#00a2e8";$("#set").showModal()};
+$("#sHist").onchange=e=>{cfg.hist=e.target.checked;save()};
+$("#sNew").onchange=e=>{cfg.newtab=e.target.checked;save();cur.length&&render()};
+$("#sPer").onchange=e=>{cfg.per=+e.target.value;save()};
+$("#sFs").oninput=e=>{cfg.fs=+e.target.value;save();apply()};
+$("#sBg").oninput=e=>{cfg.bg=e.target.value;save();applyBg()};
+$("#xHist").onclick=()=>{hist=[];save();toast("Historial borrado")};
+$("#xRst").onclick=()=>{cfg=Object.assign({},DEF,{lang:LANG});quick=DQ.slice();save();apply();drawQuick();toast("Ajustes restablecidos")};
+$("#xExp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({cfg,hist,favs,quick},null,1)],{type:"application/json"}));a.download="osc-search.json";a.click();toast("Exportado")};
+$("#xImp").onclick=()=>$("#impFile").click();
+$("#impFile").onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());cfg=Object.assign({},DEF,j.cfg);hist=j.hist||[];favs=j.favs||[];quick=j.quick||DQ;save();apply();drawQuick();toast("Importado")}catch(x){toast("Archivo no válido")}e.target.value=""};
+$$("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+$("#aboutBtn").onclick=()=>$("#about").showModal();
+$("#closeAbout").onclick=()=>$("#about").close();
+
+/* ----- Atajos y extras ----- */
+addEventListener("keydown",e=>{
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if((e.key==="/"&&!typing)||(e.key.toLowerCase()==="k"&&(e.ctrlKey||e.metaKey))){e.preventDefault();q.focus();q.select()}
+  const m=e.altKey&&/^Digit([0-5])$/.exec(e.code);if(m)setTheme(m[1]==="0"?"default":THEMES[m[1]-1]);
+});
+addEventListener("scroll",()=>$("#top").style.display=scrollY>400?"block":"none");
+$("#top").onclick=()=>scrollTo({top:0,behavior:"smooth"});
+addEventListener("offline",()=>toast("Sin conexión 📡"));
+addEventListener("online",()=>toast("Conexión restaurada ✅"));
+
+/* ----- Inicio ----- */
+if(!LS.g("osc.cfg",null)){try{const o=localStorage.getItem("osc-theme");if(o)cfg.theme=o}catch(e){}}
+apply();drawQuick();upd();setFav("🔍");
+</script>
+
+<script>
+/* ============================================================
+   OSC Search · Módulo extra
+   Respuestas rápidas, herramientas, ajustes y atajos.
+   ============================================================ */
+(function () {
+
+  /* ---------- Estado extra ---------- */
+  let counts  = LS.g("osc.counts", {});
+  let visited = new Set(LS.g("osc.visited", []));
+  let todos   = LS.g("osc.todos", []);
+  let notes   = LS.g("osc.notes", "");
+  let timerId = null;
+
+  const GRADS = {
+    sunset: "linear-gradient(135deg,#ff7e5f,#feb47b)",
+    ocean:  "linear-gradient(135deg,#0072ff,#00c6ff)",
+    forest: "linear-gradient(135deg,#134e5e,#71b280)",
+    night:  "linear-gradient(135deg,#0f2027,#2c5364)"
+  };
+
+  /* ---------- Utilidades ---------- */
+  function download(name, text, type) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: type || "text/plain" }));
+    a.download = name;
+    a.click();
+  }
+
+  function copyText(text, msg) {
+    const p = navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject();
+    p.then(() => toast(msg || "Copiado"), () => toast("No se pudo copiar"));
+  }
+
+  function noAccents(t) {
+    return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  function fmt(sec) {
+    return pad(Math.floor(sec / 60)) + ":" + pad(sec % 60);
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.3, 0.6].forEach(function (d) {
+        const o = ctx.createOscillator();
+        o.frequency.value = 880;
+        o.connect(ctx.destination);
+        o.start(ctx.currentTime + d);
+        o.stop(ctx.currentTime + d + 0.18);
+      });
+    } catch (e) {}
+  }
+
+  function makeDialog(id, title, body) {
+    document.body.insertAdjacentHTML("beforeend",
+      '<dialog id="' + id + '"><h2>' + title + '</h2>' +
+      '<div id="' + id + 'Body">' + body + '</div>' +
+      '<div class="row"><button data-x>Cerrar</button></div></dialog>');
+    const d = document.getElementById(id);
+    d.querySelector("[data-x]").onclick = function () { d.close(); };
+    return d;
+  }
+
+  function closeOnOutside(d) {
+    d.addEventListener("click", function (e) {
+      if (e.target !== d) return;
+      const r = d.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
+    });
+  }
+
+  /* ---------- Conversor de unidades ---------- */
+  const UNITS = {
+    len:  { m: 1, km: 1000, cm: 0.01, mm: 0.001, mi: 1609.344, milla: 1609.344, milha: 1609.344, polegada: 0.0254, jarda: 0.9144, mile: 1609.344, foot: 0.3048, feet: 0.3048, inch: 0.0254, inche: 0.0254, yard: 0.9144, meter: 1, kilometer: 1000, ft: 0.3048, pie: 0.3048, in: 0.0254, pulgada: 0.0254, yd: 0.9144, yarda: 0.9144, metro: 1, kilometro: 1000, quilometro: 1000, centimetro: 0.01, milimetro: 0.001, pe: 0.3048 },
+    mass: { kg: 1, g: 0.001, lb: 0.45359237, libra: 0.45359237, oz: 0.0283495, onza: 0.0283495, onca: 0.0283495, ounce: 0.0283495, pound: 0.45359237, t: 1000, gramo: 0.001, gram: 0.001, kilo: 1, kilogramo: 1, kilogram: 1 },
+    vol:  { l: 1, ml: 0.001, gal: 3.785411784, galon: 3.785411784, galao: 3.785411784, gallon: 3.785411784, liter: 1, litre: 1, cup: 0.2365882, taza: 0.2365882, litro: 1, mililitro: 0.001, galone: 3.785411784, galoe: 3.785411784 }
+  };
+
+  function normUnit(u) {
+    u = noAccents(u).replace("°", "");
+    if (u === "pies") return "pie";
+    return u.length > 2 ? u.replace(/s$/, "") : u;
+  }
+
+  function convert(v, from, to) {
+    from = normUnit(from);
+    to = normUnit(to);
+    const temps = { c: 1, f: 1, k: 1 };
+    if (temps[from] && temps[to]) {
+      let c = from === "c" ? v : from === "f" ? (v - 32) * 5 / 9 : v - 273.15;
+      return to === "c" ? c : to === "f" ? c * 9 / 5 + 32 : c + 273.15;
+    }
+    for (const k in UNITS) {
+      if (UNITS[k][from] && UNITS[k][to]) return v * UNITS[k][from] / UNITS[k][to];
+    }
+    return null;
+  }
+
+  /* ---------- Zonas horarias ---------- */
+  const ZONES = {
+    "tokio": "Asia/Tokyo", "nueva york": "America/New_York", "londres": "Europe/London",
+    "madrid": "Europe/Madrid", "paris": "Europe/Paris", "berlin": "Europe/Berlin",
+    "ciudad de mexico": "America/Mexico_City", "tijuana": "America/Tijuana", "ensenada": "America/Tijuana",
+    "los angeles": "America/Los_Angeles", "buenos aires": "America/Argentina/Buenos_Aires",
+    "bogota": "America/Bogota", "lima": "America/Lima", "sidney": "Australia/Sydney",
+    "pekin": "Asia/Shanghai", "moscu": "Europe/Moscow", "dubai": "Asia/Dubai"
+  };
+
+  /* ---------- Clima ---------- */
+  function weatherText(c) {
+    if (c === 0) return "Despejado ☀️";
+    if (c <= 3) return "Parcialmente nublado ⛅";
+    if (c === 45 || c === 48) return "Niebla 🌫️";
+    if (c <= 57) return "Llovizna 🌦️";
+    if (c <= 67) return "Lluvia 🌧️";
+    if (c <= 77) return "Nieve ❄️";
+    if (c <= 82) return "Chubascos 🌧️";
+    return "Tormenta ⛈️";
+  }
+
+  async function weather(place, my) {
+    try {
+      const g = await J("https://geocoding-api.open-meteo.com/v1/search?count=1&language=" + LANG + "&name=" + encodeURIComponent(place));
+      if (!g.results) { if (my === token) showCard("<div><h3>🌡️ No encontré \"" + esc(place) + "\"</h3></div>"); return; }
+      const c = g.results[0];
+      const w = await J("https://api.open-meteo.com/v1/forecast?latitude=" + c.latitude + "&longitude=" + c.longitude +
+        "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m" +
+        "&daily=temperature_2m_max,temperature_2m_min&timezone=auto");
+      if (my !== token) return;
+      const n = w.current, d = w.daily;
+      showCard("<div><h3>" + esc(c.name) + (c.country ? ", " + esc(c.country) : "") + "</h3>" +
+        "<p>" + weatherText(n.weather_code) + " · <b>" + Math.round(n.temperature_2m) + "°C</b> (sensación " + Math.round(n.apparent_temperature) + "°C)<br>" +
+        "💧 " + n.relative_humidity_2m + "% · 💨 " + Math.round(n.wind_speed_10m) + " km/h<br>" +
+        "Hoy: mín " + Math.round(d.temperature_2m_min[0]) + "° / máx " + Math.round(d.temperature_2m_max[0]) + "°</p></div>");
+    } catch (e) {
+      if (my === token) showCard("<div><h3>🌡️ No pude obtener el clima</h3></div>");
+    }
+  }
+
+  /* ---------- Diccionario (Wikcionario) ---------- */
+  async function define(word, my) {
+    try {
+      const j = await J("https://" + LANG + ".wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&exintro=1&redirects=1&format=json&origin=*&titles=" + encodeURIComponent(word));
+      const page = Object.values(j.query.pages)[0];
+      if (my !== token) return;
+      if (!page.extract) { showCard("<div><h3>📖 No encontré la definición de \"" + esc(word) + "\"</h3></div>"); return; }
+      const txt = page.extract.replace(/\n+/g, " ").slice(0, 420);
+      showCard("<div><h3>📖 " + esc(page.title) + "</h3><p>" + esc(txt) + "…</p></div>");
+    } catch (e) {
+      if (my === token) showCard("<div><h3>📖 No pude consultar el diccionario</h3></div>");
+    }
+  }
+
+  /* ---------- Calendario ---------- */
+  function calendarHTML() {
+    const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+    const first = (new Date(y, m, 1).getDay() + 6) % 7;
+    const days = new Date(y, m + 1, 0).getDate();
+    let h = "<div><h3>📅 " + now.toLocaleDateString(LOC(), { month: "long", year: "numeric" }) + '</h3><table class="calt"><tr>';
+    ["L", "M", "X", "J", "V", "S", "D"].forEach(function (d) { h += "<th>" + d + "</th>"; });
+    h += "</tr><tr>";
+    for (let i = 0; i < first; i++) h += "<td></td>";
+    for (let d = 1; d <= days; d++) {
+      h += '<td class="' + (d === now.getDate() ? "hoy" : "") + '">' + d + "</td>";
+      if ((first + d) % 7 === 0 && d < days) h += "</tr><tr>";
+    }
+    return h + "</tr></table></div>";
+  }
+
+  /* ---------- Contraseña ---------- */
+  function makePassword(len) {
+    const set = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*?";
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, function (n) { return set[n % set.length]; }).join("");
+  }
+
+  /* ---------- Temporizador ---------- */
+  function startTimer(sec) {
+    clearInterval(timerId);
+    const end = Date.now() + sec * 1000;
+    showCard('<div><h3>⏱️ Temporizador: <span id="tmr"></span></h3><button class="pill" id="tmrStop">Detener</button></div>');
+    document.getElementById("tmrStop").onclick = function () { clearInterval(timerId); toast("Temporizador detenido"); };
+    function tick() {
+      const left = Math.max(0, Math.round((end - Date.now()) / 1000));
+      const el = document.getElementById("tmr");
+      if (el) el.textContent = fmt(left);
+      if (left <= 0) { clearInterval(timerId); beep(); toast("⏰ ¡Tiempo!"); }
+    }
+    timerId = setInterval(tick, 250);
+    tick();
+  }
+
+  /* ---------- Respuestas enriquecidas ---------- */
+  function extras(t, my) {
+    const l = noAccents(t);
+    let m;
+
+    if ((m = t.match(/^(-?[\d.,]+)\s*([a-zA-Z°ñÑ]+)\s+(?:a|to|en|para)\s+([a-zA-Z°ñÑ]+)$/))) {
+      const r = convert(parseFloat(m[1].replace(",", ".")), m[2], m[3]);
+      if (r !== null) return showCard("<div><h3>⚖️ " + esc(m[1]) + " " + esc(m[2]) + " = " + (+r.toFixed(4)) + " " + esc(m[3]) + "</h3></div>");
+    }
+    if ((m = l.match(/^(contrasena|password|pass)(?:\s+(\d{1,2}))?$/))) {
+      const pw = makePassword(Math.min(Math.max(+(m[2] || 16), 6), 64));
+      return showCard('<div><h3>🔑 Contraseña segura</h3><p class="pwd">' + esc(pw) + '</p><button class="pill" data-copy="' + esc(pw) + '">Copiar</button></div>');
+    }
+    if ((m = t.match(/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/))) {
+      let hex = m[1];
+      if (hex.length === 3) hex = hex.replace(/./g, "$&$&");
+      const rgb = [0, 2, 4].map(function (i) { return parseInt(hex.substr(i, 2), 16); });
+      return showCard('<div class="swatch" style="background:#' + hex + '"></div><div><h3>🎨 #' + hex.toUpperCase() + "</h3><p>rgb(" + rgb.join(", ") + ")</p></div>");
+    }
+    if ((m = l.match(/^(clima|tiempo|weather)\s+(?:(?:en|in|em)\s+)?(.+)$/))) return weather(t.replace(/^\S+\s+(?:(?:en|in|em)\s+)?/i, ""), my);
+    if ((m = l.match(/^(definir|define|significado de)\s+(.+)$/))) return define(t.replace(/^(definir|define|significado de)\s+/i, ""), my);
+    if ((m = l.match(/^(temporizador|timer)\s+(\d+)\s*(s|seg|m|min)?$/))) {
+      const n = +m[2], secs = /^m/.test(m[3] || "m") ? n * 60 : n;
+      return startTimer(Math.min(secs, 86400));
+    }
+    if (/^(calendario|calendar|mes)$/.test(l)) return showCard(calendarHTML());
+    if ((m = l.match(/^(?:hora en|time in|hora em) (.+)$/)) && ZONES[m[1]]) {
+      const tz = ZONES[m[1]];
+      return showCard("<div><h3>🕒 " + new Date().toLocaleString(LOC(), { timeZone: tz, dateStyle: "full", timeStyle: "short" }) + "</h3><p>" + esc(m[1]) + " (" + tz + ")</p></div>");
+    }
+    if ((m = l.match(/^(?:aleatorio|random)\s+(-?\d+)\s+(-?\d+)$/))) {
+      const a = Math.min(+m[1], +m[2]), b = Math.max(+m[1], +m[2]);
+      return showCard("<div><h3>🎲 " + (a + Math.floor(Math.random() * (b - a + 1))) + "</h3><p>Entre " + a + " y " + b + "</p></div>");
+    }
+  }
+
+  /* ---------- Ganchos sobre las funciones originales ---------- */
+  const _search = search;
+  search = function (t) {
+    _search(t);
+    const text = (t == null ? q.value : t).trim();
+    if (!text || lastQ !== text) return;
+    counts[text] = (counts[text] || 0) + 1;
+    LS.s("osc.counts", counts);
+    extras(text, token);
+  };
+
+  const _home = home;
+  home = function () {
+    _home();
+    rtools.hidden = true;
+    drawTop();
+  };
+
+  const _render = render;
+  render = function () {
+    _render();
+    rtools.hidden = false;
+    postRender();
+  };
+
+  const _setTheme = setTheme;
+  setTheme = function (t) {
+    _setTheme(t);
+    applyExtras();
+  };
+
+  /* ---------- Barra de herramientas de resultados ---------- */
+  tabsBox.insertAdjacentHTML("afterend",
+    '<div class="rtools" id="rtools" hidden>' +
+    '<input id="rFilter" placeholder="Filtrar resultados..." aria-label="Filtrar resultados">' +
+    '<select id="rSort" aria-label="Ordenar"><option value="rel">Relevancia</option><option value="az">A → Z</option><option value="star">★ Estrellas</option></select>' +
+    '<button class="pill" id="rDens">Compacto</button>' +
+    '<button class="pill" id="rExp">⬇ CSV</button>' +
+    '<button class="pill" id="rShare">🔗 Compartir</button>' +
+    '<button class="pill" id="rPrint">🖨️</button></div>');
+  const rtools = document.getElementById("rtools");
+
+  function resNodes() { return [].slice.call(resBox.querySelectorAll(".res")); }
+  function nodeIndex(n) { return +n.querySelector("[data-fav]").dataset.fav; }
+
+  function postRender() {
+    const f = noAccents($("#rFilter").value.trim());
+    const mode = $("#rSort").value;
+    const nodes = resNodes();
+    nodes.forEach(function (n) {
+      n.hidden = !!f && noAccents(n.textContent).indexOf(f) < 0;
+      n.classList.toggle("vis", visited.has(n.querySelector("h3 a").href));
+    });
+    nodes.sort(function (a, b) {
+      if (mode === "az") return a.querySelector("h3").textContent.localeCompare(b.querySelector("h3").textContent);
+      if (mode === "star") return stars(b) - stars(a);
+      return nodeIndex(a) - nodeIndex(b);
+    }).forEach(function (n) { resBox.appendChild(n); });
+  }
+
+  function stars(n) {
+    const m = n.querySelector("p").textContent.match(/★\s*([\d.,\s\u00a0\u202f]+)/);
+    return m ? parseInt(m[1].replace(/\D/g, ""), 10) || 0 : 0;
+  }
+
+  $("#rFilter").oninput = postRender;
+  $("#rSort").onchange = postRender;
+
+  $("#rDens").onclick = function () {
+    cfg.compact = !cfg.compact;
+    save();
+    applyExtras();
+  };
+
+  $("#rExp").onclick = function () {
+    if (!cur.length) return toast("No hay resultados");
+    const rows = [["Origen", "Título", "URL", "Descripción"]].concat(cur.map(function (r) {
+      return [r.src, r.title, r.url, r.desc || ""];
+    }));
+    download("resultados.csv", "\ufeff" + rows.map(function (r) {
+      return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",");
+    }).join("\n"), "text/csv");
+  };
+
+  $("#rShare").onclick = function () {
+    copyText(location.href.split("#")[0] + "#q=" + encodeURIComponent(lastQ), "Enlace copiado");
+  };
+  $("#rPrint").onclick = function () { window.print(); };
+
+  resBox.addEventListener("click", function (e) {
+    const a = e.target.closest(".res h3 a");
+    if (!a) return;
+    visited.add(a.href);
+    LS.s("osc.visited", Array.from(visited).slice(-300));
+    a.closest(".res").classList.add("vis");
+  });
+
+  /* ---------- Tarjeta: copiar y leer en voz alta ---------- */
+  card.addEventListener("click", function (e) {
+    const c = e.target.closest("[data-copy]");
+    if (c) return copyText(c.dataset.copy, "Contraseña copiada");
+    if (e.target.closest(".tts")) {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(card.querySelector("p").textContent);
+      u.lang = LOC();
+      speechSynthesis.speak(u);
+    }
+  });
+
+  new MutationObserver(function () {
+    if (card.hidden || card.querySelector(".tts") || !("speechSynthesis" in window)) return;
+    const p = card.querySelector("p:not(.pwd)");
+    if (p) p.insertAdjacentHTML("afterend", '<button class="pill tts" type="button">🔊 Escuchar</button>');
+  }).observe(card, { childList: true });
+
+  /* ---------- Inicio: widgets y herramientas ---------- */
+  const QUOTES = [
+    "Quien persevera, alcanza.",
+    "Un viaje de mil millas empieza con un paso.",
+    "Lo que se hace con ganas, sale mejor.",
+    "Aprender es el mejor hobby.",
+    "Pequeños avances cada día suman grandes resultados.",
+    "La curiosidad es el motor del conocimiento.",
+    "Si no sale a la primera, vuelve a intentarlo.",
+    "Un buen día empieza con una buena idea.",
+    "Crear es mejor que consumir.",
+    "Hoy es un buen día para aprender algo nuevo."
+  ];
+
+  document.getElementById("home").insertAdjacentHTML("beforeend",
+    '<div class="chips" id="topChips"></div>' +
+    '<div class="toolrow">' +
+    '<button class="pill" data-tool="notes">📝 Notas</button>' +
+    '<button class="pill" data-tool="todo">✅ Tareas</button>' +
+    '<button class="pill" data-tool="hist">🕘 Historial</button>' +
+    '<button class="pill" data-tool="stats">📊 Estadísticas</button>' +
+    '<button class="pill" data-tool="tour">❓ Tour</button></div>' +
+    '<div class="wid" id="quote"></div>' +
+    '<div class="wid" id="otd" hidden></div>');
+
+  document.getElementById("quote").textContent = "💡 " + QUOTES[Math.floor(Date.now() / 864e5) % QUOTES.length];
+
+  function drawTop() {
+    const top = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 5);
+    document.getElementById("topChips").innerHTML = top.length
+      ? "🔥 " + top.map(function (x) { return '<button class="pill">' + esc(x) + "</button>"; }).join("")
+      : "";
+  }
+
+  document.getElementById("topChips").onclick = function (e) {
+    if (e.target.matches("button")) search(e.target.textContent);
+  };
+
+  async function onThisDay() {
+    const d = new Date(), key = "osc.otd." + LANG + d.toDateString();
+    let txt = LS.g(key, null);
+    try {
+      if (!txt) {
+        const j = await J("https://" + LANG + ".wikipedia.org/api/rest_v1/feed/onthisday/events/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()));
+        const ev = j.events[d.getDate() % j.events.length];
+        txt = "📆 Un día como hoy, en " + ev.year + ": " + ev.text;
+        LS.s(key, txt);
+      }
+      const el = document.getElementById("otd");
+      el.textContent = txt;
+      el.hidden = false;
+    } catch (e) {}
+  }
+
+  /* ---------- Diálogos de herramientas ---------- */
+  const dNotes = makeDialog("dNotes", "📝 Notas rápidas",
+    '<textarea id="nTxt" placeholder="Escribe aquí..."></textarea><p id="nCount"></p>' +
+    '<div class="row"><button id="nCopy">Copiar</button><button id="nDown">Descargar .txt</button><button id="nClear">Borrar</button></div>');
+
+  function updNotes() {
+    document.getElementById("nCount").textContent = notes.length + " caracteres";
+  }
+  const nTxt = document.getElementById("nTxt");
+  nTxt.value = notes;
+  nTxt.oninput = function () { notes = nTxt.value; LS.s("osc.notes", notes); updNotes(); };
+  document.getElementById("nCopy").onclick = function () { copyText(notes, "Notas copiadas"); };
+  document.getElementById("nDown").onclick = function () { download("notas.txt", notes); };
+  document.getElementById("nClear").onclick = function () {
+    if (confirm("¿Borrar todas las notas?")) { notes = ""; nTxt.value = ""; LS.s("osc.notes", ""); updNotes(); }
+  };
+
+  const dTodo = makeDialog("dTodo", "✅ Tareas",
+    '<input type="text" id="tIn" placeholder="Nueva tarea y Enter"><div id="tList"></div>' +
+    '<div class="row"><button id="tClear">Quitar completadas</button></div><p id="tCount"></p>');
+
+  function drawTodos() {
+    document.getElementById("tList").innerHTML = todos.map(function (t, i) {
+      return '<div class="todo ' + (t.d ? "done" : "") + '"><input type="checkbox" data-td="' + i + '" ' + (t.d ? "checked" : "") + ">" +
+        "<span>" + esc(t.t) + '</span><button data-tx="' + i + '">✕</button></div>';
+    }).join("");
+    const left = todos.filter(function (t) { return !t.d; }).length;
+    document.getElementById("tCount").textContent = left + " pendientes de " + todos.length;
+    LS.s("osc.todos", todos);
+  }
+  document.getElementById("tIn").onkeydown = function (e) {
+    if (e.key === "Enter" && this.value.trim()) {
+      todos.push({ t: this.value.trim().slice(0, 120), d: false });
+      this.value = "";
+      drawTodos();
+    }
+  };
+  document.getElementById("tList").onclick = function (e) {
+    const c = e.target.closest("[data-td]"), x = e.target.closest("[data-tx]");
+    if (c) todos[+c.dataset.td].d = c.checked;
+    if (x) todos.splice(+x.dataset.tx, 1);
+    if (c || x) drawTodos();
+  };
+  document.getElementById("tClear").onclick = function () {
+    todos = todos.filter(function (t) { return !t.d; });
+    drawTodos();
+  };
+
+  const dHist = makeDialog("dHist", "🕘 Historial",
+    '<input type="text" id="hIn" placeholder="Filtrar historial..."><div id="hList"></div>');
+
+  function drawHist() {
+    const f = noAccents(document.getElementById("hIn").value);
+    const items = hist.filter(function (h) { return noAccents(h).indexOf(f) >= 0; });
+    document.getElementById("hList").innerHTML = items.length
+      ? items.map(function (h) {
+          return '<div class="fv"><a href="#" data-hs="' + esc(h) + '">' + esc(h) + "</a><small>" + (counts[h] || 1) + '×</small><button data-hd="' + esc(h) + '">✕</button></div>';
+        }).join("")
+      : "<p>No hay búsquedas guardadas.</p>";
+  }
+  document.getElementById("hIn").oninput = drawHist;
+  document.getElementById("hList").onclick = function (e) {
+    const s = e.target.closest("[data-hs]"), d = e.target.closest("[data-hd]");
+    if (s) { e.preventDefault(); dHist.close(); search(s.dataset.hs); }
+    if (d) { hist = hist.filter(function (h) { return h !== d.dataset.hd; }); save(); drawHist(); }
+  };
+
+  const dStats = makeDialog("dStats", "📊 Estadísticas", "");
+  function drawStats() {
+    const total = Object.values(counts).reduce(function (a, b) { return a + b; }, 0);
+    const top = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 5);
+    document.getElementById("dStatsBody").innerHTML =
+      '<div class="stat"><span>Búsquedas totales</span><b>' + total + "</b></div>" +
+      '<div class="stat"><span>Términos distintos</span><b>' + Object.keys(counts).length + "</b></div>" +
+      '<div class="stat"><span>Favoritos</span><b>' + favs.length + "</b></div>" +
+      '<div class="stat"><span>Resultados visitados</span><b>' + visited.size + "</b></div>" +
+      '<div class="stat"><span>Tareas pendientes</span><b>' + todos.filter(function (t) { return !t.d; }).length + "</b></div>" +
+      "<h3>Más buscados</h3>" +
+      (top.length ? top.map(function (x) { return '<div class="stat"><span>' + esc(x) + "</span><b>" + counts[x] + "×</b></div>"; }).join("") : "<p>Aún no hay datos.</p>");
+  }
+
+  const TOUR = [
+    "👋 ¡Bienvenido a OSC Search! Escribe en la barra y presiona Enter: los resultados salen aquí mismo.",
+    "🎨 Cambia la interfaz con Viejo, AERO, Yahoo!, Minimalista o Google. Toca el logo para volver al original.",
+    "⚡ Prueba: mate 2+2*5, 10 km a millas, clima Ensenada, definir casa, temporizador 5, contraseña, calendario, #ff8800.",
+    "⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..5 cambian de interfaz."
+  ];
+  let tourStep = 0;
+  const dTour = makeDialog("dTour", "❓ Tour",
+    '<p id="tourTxt"></p><div class="row"><button id="tPrev">← Atrás</button><button id="tNext">Siguiente →</button></div>');
+  function drawTour() {
+    document.getElementById("tourTxt").textContent = TOUR[tourStep] + "  (" + (tourStep + 1) + "/" + TOUR.length + ")";
+    document.getElementById("tPrev").disabled = tourStep === 0;
+    document.getElementById("tNext").textContent = tourStep === TOUR.length - 1 ? "Terminar" : "Siguiente →";
+  }
+  document.getElementById("tPrev").onclick = function () { tourStep--; drawTour(); };
+  document.getElementById("tNext").onclick = function () {
+    if (tourStep === TOUR.length - 1) { dTour.close(); LS.s("osc.tour", 1); return; }
+    tourStep++;
+    drawTour();
+  };
+
+  document.querySelector(".toolrow").onclick = function (e) {
+    const b = e.target.closest("[data-tool]");
+    if (!b) return;
+    const k = b.dataset.tool;
+    if (k === "notes") { updNotes(); dNotes.showModal(); }
+    if (k === "todo")  { drawTodos(); dTodo.showModal(); }
+    if (k === "hist")  { drawHist(); dHist.showModal(); }
+    if (k === "stats") { drawStats(); dStats.showModal(); }
+    if (k === "tour")  { tourStep = 0; drawTour(); dTour.showModal(); }
+  };
+
+  /* ---------- Ajustes extra ---------- */
+  document.querySelector("#set .row").insertAdjacentHTML("beforebegin",
+    '<label>Color de cabecera (estilo original) <input type="color" id="sAcc" value="#ffc60f"></label>' +
+    '<label>Fondo degradado <select id="sGrad"><option value="">Sólido</option><option value="sunset">Atardecer</option>' +
+    '<option value="ocean">Océano</option><option value="forest">Bosque</option><option value="night">Noche</option></select></label>');
+
+  document.getElementById("sAcc").oninput = function (e) { cfg.accent = e.target.value; save(); applyExtras(); };
+  document.getElementById("sGrad").onchange = function (e) { cfg.grad = e.target.value; save(); applyExtras(); };
+  document.getElementById("setBtn").addEventListener("click", function () {
+    document.getElementById("sAcc").value = cfg.accent || "#ffc60f";
+    document.getElementById("sGrad").value = cfg.grad || "";
+  });
+
+  function applyExtras() {
+    const b = document.body, def = b.dataset.theme === "default";
+    if (def && cfg.accent) b.style.setProperty("--head", cfg.accent); else b.style.removeProperty("--head");
+    b.style.background = def && cfg.grad && GRADS[cfg.grad] ? GRADS[cfg.grad] : "";
+    b.classList.toggle("compact", !!cfg.compact);
+    document.getElementById("rDens").textContent = cfg.compact ? "Cómodo" : "Compacto";
+  }
+
+  /* ---------- Atajos de teclado ---------- */
+  addEventListener("keydown", function (e) {
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key !== "j" && e.key !== "k") return;
+    const links = resNodes().filter(function (n) { return !n.hidden; }).map(function (n) { return n.querySelector("h3 a"); });
+    if (!links.length) return;
+    let i = links.indexOf(document.activeElement);
+    i = e.key === "j" ? Math.min(links.length - 1, i + 1) : Math.max(0, i - 1);
+    links[i].focus();
+    links[i].scrollIntoView({ block: "center", behavior: "smooth" });
+  });
+
+  const KON = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  let kp = 0;
+  addEventListener("keydown", function (e) {
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    kp = k === KON[kp] ? kp + 1 : (k === KON[0] ? 1 : 0);
+    if (kp === KON.length) {
+      kp = 0;
+      document.body.classList.add("party");
+      toast("🎉 ¡Modo arcoíris!");
+      setTimeout(function () { document.body.classList.remove("party"); }, 6000);
+    }
+  });
+
+  addEventListener("hashchange", function () {
+    const m = location.hash.match(/^#q=(.+)/);
+    if (m) { const t = decodeURIComponent(m[1]); if (t !== lastQ) search(t); }
+  });
+
+  /* ---------- Inicio del módulo ---------- */
+  document.querySelectorAll("dialog").forEach(closeOnOutside);
+  drawTop();
+  onThisDay();
+  applyExtras();
+  if (!LS.g("osc.tour", 0)) setTimeout(function () { tourStep = 0; drawTour(); dTour.showModal(); }, 900);
+
+})();
+</script>
+
+<script>
+/* ============================================================
+   OSC Calculator
+   Se abre al buscar "mate 2+2*5", "calculadora" o una operación.
+   ============================================================ */
+(function () {
+  let expr = "";
+  let justEq = false;
+  let calcHist = LS.g("osc.calchist", []);
+
+  const OPS = "+−×÷^";
+  const MATHRE = /^[\d\s+\-*/().,%^×÷√πxX−]+$/;
+
+  /* ---------- Evaluación segura ---------- */
+  function evalMath(src) {
+    let e = String(src);
+    e = e.replace(/(\d)\s*[xX]\s*(?=[\d(.])/g, "$1*");
+    e = e.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-");
+    e = e.replace(/\^/g, "**").replace(/,/g, ".");
+    e = e.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
+    e = e.replace(/√/g, "S").replace(/π/g, "P");
+    if (!e.trim() || !/^[\dSP+\-*/().\s]+$/.test(e)) return null;
+    if (/S(?!\s*\()/.test(e)) return null;
+    e = e.replace(/S/g, "Math.sqrt").replace(/P/g, "Math.PI");
+    try {
+      const v = Function('"use strict";return (' + e + ")")();
+      if (typeof v !== "number" || !isFinite(v)) return null;
+      return String(+v.toPrecision(12));
+    } catch (err) {
+      return null;
+    }
+  }
+
+  /* ---------- ¿La búsqueda es una operación? ---------- */
+  function calcQuery(t) {
+    const m = t.match(/^(mate|mates|matematica|matematicas|math|calc|calculadora|osc calculator)\b\s*(.*)$/i);
+    if (m) {
+      const rest = m[2].trim();
+      if (!rest) return /^(mate|mates|matematica|matematicas|math)$/i.test(m[1]) ? null : "";
+      return MATHRE.test(rest) && /\d/.test(rest) ? rest : null;
+    }
+    if (MATHRE.test(t) && /\d/.test(t) && /[+\-*/%^×÷√]|\d\s*x\s*\d/i.test(t)) return t;
+    return null;
+  }
+
+  /* ---------- Interfaz ---------- */
+  function keysHTML() {
+    const keys = [
+      ["C", "fn"], ["⌫", "fn"], ["(", "fn"], [")", "fn"],
+      ["7"], ["8"], ["9"], ["÷", "op"],
+      ["4"], ["5"], ["6"], ["×", "op"],
+      ["1"], ["2"], ["3"], ["−", "op"],
+      ["0"], ["."], ["%", "fn"], ["+", "op"],
+      ["√", "fn"], ["π", "fn"], ["^", "fn"], ["=", "eq"]
+    ];
+    return keys.map(function (k) {
+      return '<button data-k="' + k[0] + '" class="' + (k[1] || "") + '">' + k[0] + "</button>";
+    }).join("");
+  }
+
+  function show(expression) {
+    expr = expression;
+    justEq = false;
+    showCard('<div class="calc" id="oscCalc">' +
+      '<div class="calc-title">🧮 OSC Calculator</div>' +
+      '<div class="calc-expr" id="cExpr"></div>' +
+      '<div class="calc-res" id="cRes">0</div>' +
+      '<div class="calc-keys">' + keysHTML() + "</div>" +
+      '<div class="calc-hist" id="cHist"></div></div>');
+    update();
+  }
+
+  function update() {
+    const ex = document.getElementById("cExpr");
+    if (!ex) return;
+    const r = evalMath(expr);
+    ex.textContent = expr || " ";
+    document.getElementById("cRes").textContent = r !== null ? "= " + r : (expr ? "…" : "0");
+    document.getElementById("cHist").innerHTML = calcHist.map(function (h, i) {
+      return '<div data-hr="' + i + '">' + esc(h.e) + " = " + esc(h.r) + "</div>";
+    }).join("");
+  }
+
+  function press(k) {
+    if (k === "C") {
+      expr = "";
+      justEq = false;
+    } else if (k === "⌫") {
+      expr = expr.slice(0, -1);
+    } else if (k === "=") {
+      const r = evalMath(expr);
+      if (r === null) { toast("Operación no válida"); return; }
+      calcHist.unshift({ e: expr, r: r });
+      calcHist = calcHist.slice(0, 5);
+      LS.s("osc.calchist", calcHist);
+      expr = r;
+      justEq = true;
+    } else {
+      if (justEq && OPS.indexOf(k) < 0 && k !== "%") expr = "";
+      justEq = false;
+      if (OPS.indexOf(k) >= 0 && expr && OPS.indexOf(expr.slice(-1)) >= 0) expr = expr.slice(0, -1);
+      expr += k === "√" ? "√(" : k;
+    }
+    update();
+  }
+
+  /* ---------- Eventos ---------- */
+  card.addEventListener("click", function (e) {
+    if (!document.getElementById("oscCalc")) return;
+    const b = e.target.closest("[data-k]");
+    const h = e.target.closest("[data-hr]");
+    if (b) press(b.dataset.k);
+    if (h) { expr = calcHist[+h.dataset.hr].e; justEq = false; update(); }
+  });
+
+  addEventListener("keydown", function (e) {
+    if (!document.getElementById("oscCalc") || card.hidden) return;
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+    const map = { "*": "×", "x": "×", "X": "×", "/": "÷", "-": "−", "Enter": "=", "=": "=", "Backspace": "⌫", "Escape": "C", "Delete": "C", "c": "C", ",": "." };
+    const k = map[e.key] || e.key;
+    if (!/^([0-9+−×÷().%^=⌫C]|√|π)$/.test(k)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    press(k);
+  }, true);
+
+  /* ---------- Gancho sobre la búsqueda ---------- */
+  const _search = search;
+  search = function (t) {
+    _search(t);
+    const text = (t == null ? q.value : t).trim();
+    if (!text || lastQ !== text) return;
+    const ce = calcQuery(text);
+    if (ce === null) return;
+    token++;
+    resBox.innerHTML = "";
+    tabsBox.hidden = true;
+    more.hidden = true;
+    document.getElementById("rtools").hidden = true;
+    document.getElementById("home").hidden = true;
+    status.textContent = "🧮 OSC Calculator";
+    show(ce);
+  };
+})();
+</script>
+<script>
+/* ============================================================
+   Página de resultados (estilo Google) + idiomas ES / EN / PT
+   ============================================================ */
+(function () {
+  const body = document.body;
+
+  /* ---------- Página de resultados ---------- */
+  const _search = search;
+  search = function (t) {
+    _search(t);
+    const x = (t == null ? q.value : t).trim();
+    if (x && lastQ === x) {
+      body.classList.add("serp");
+      scrollTo(0, 0);
+    }
+  };
+
+  const _home = home;
+  home = function () {
+    _home();
+    body.classList.remove("serp");
+  };
+
+  try { const hm = location.hash.match(/^#q=(.+)/); if (hm) search(decodeURIComponent(hm[1])); } catch (e) {}
+
+  /* ---------- Selector de idioma ---------- */
+  document.documentElement.lang = LANG;
+  document.querySelectorAll(".langs button").forEach(function (b) {
+    b.classList.toggle("on", b.dataset.l === LANG);
+    b.onclick = function () {
+      if (b.dataset.l === LANG) return;
+      cfg.lang = b.dataset.l;
+      save();
+      location.reload();
+    };
+  });
+
+  if (LANG === "es") return;
+
+  /* ---------- Traducción (el idioma se aplica al cargar) ---------- */
+  const RAW = `Viejo | Old | Antigo
+Minimalista | Minimalist | Minimalista
+Acerca de | About | Sobre
+Volver al estilo original | Back to the original style | Voltar ao estilo original
+Idioma | Language | Idioma
+Favoritos | Favorites | Favoritos
+Interfaz aleatoria | Random interface | Interface aleatória
+Modo oscuro | Dark mode | Modo escuro
+Ajustes | Settings | Configurações
+Buscar | Search | Pesquisar
+Borrar | Clear | Limpar
+Buscar por voz | Voice search | Pesquisa por voz
+Buscar en internet | Search the internet | Pesquisar na internet
+Quitar | Remove | Remover
+Agregar sitio | Add site | Adicionar site
+Volver arriba | Back to top | Voltar ao topo
+Favorito | Favorite | Favorito
+Copiar enlace | Copy link | Copiar link
+Filtrar resultados | Filter results | Filtrar resultados
+Ordenar | Sort | Ordenar
+Busca en internet.... | Search the internet.... | Pesquise na internet....
+Filtrar resultados... | Filter results... | Filtrar resultados...
+Escribe aquí... | Type here... | Escreva aqui...
+Nueva tarea y Enter | New task and Enter | Nova tarefa e Enter
+Filtrar historial... | Filter history... | Filtrar histórico...
+Escribe algo y presiona Enter | Type something and press Enter | Digite algo e pressione Enter
+Buscando... | Searching... | Pesquisando...
+No se pudo conectar. Revisa tu internet. | Could not connect. Check your internet. | Não foi possível conectar. Verifique sua internet.
+🎲 Sorpréndeme | 🎲 Surprise me | 🎲 Surpreenda-me
+Cargar más | Load more | Carregar mais
+📝 Notas | 📝 Notes | 📝 Notas
+✅ Tareas | ✅ Tasks | ✅ Tarefas
+🕘 Historial | 🕘 History | 🕘 Histórico
+📊 Estadísticas | 📊 Statistics | 📊 Estatísticas
+Cerrar | Close | Fechar
+⭐ Favoritos | ⭐ Favorites | ⭐ Favoritos
+Aún no tienes favoritos. Toca ☆ en un resultado. | You have no favorites yet. Tap ☆ on a result. | Você ainda não tem favoritos. Toque em ☆ em um resultado.
+⚙️ Ajustes | ⚙️ Settings | ⚙️ Configurações
+Guardar historial | Save history | Salvar histórico
+Abrir resultados en pestaña nueva | Open results in a new tab | Abrir resultados em nova aba
+Resultados por búsqueda | Results per search | Resultados por pesquisa
+Tamaño | Size | Tamanho
+Color de fondo (estilo original) | Background color (original style) | Cor de fundo (estilo original)
+Color de cabecera (estilo original) | Header color (original style) | Cor do cabeçalho (estilo original)
+Fondo degradado | Gradient background | Fundo degradê
+Sólido | Solid | Sólido
+Atardecer | Sunset | Pôr do sol
+Océano | Ocean | Oceano
+Bosque | Forest | Floresta
+Noche | Night | Noite
+Exportar | Export | Exportar
+Importar | Import | Importar
+Borrar historial | Clear history | Limpar histórico
+Restablecer | Reset | Redefinir
+Acerca de OSC Search | About OSC Search | Sobre o OSC Search
+OSC Search es un buscador hecho en un solo archivo HTML. Escribe algo y los resultados aparecen aquí mismo; al tocar uno, se abre en una pestaña nueva. | OSC Search is a search engine built in a single HTML file. Type something and the results appear right here; tap one to open it in a new tab. | O OSC Search é um buscador feito em um único arquivo HTML. Digite algo e os resultados aparecem aqui mesmo; toque em um para abri-lo em uma nova aba.
+Si escribes una dirección web, como wikipedia.org, se abre directamente ese sitio. | If you type a web address, like wikipedia.org, that site opens directly. | Se você digitar um endereço da web, como wikipedia.org, esse site abre diretamente.
+Los botones Viejo, AERO, Yahoo!, Minimalista y Google cambian la interfaz. Toca el logo para volver al inicio. | The Old, AERO, Yahoo!, Minimalist and Google buttons change the interface. Tap the logo to go back home. | Os botões Antigo, AERO, Yahoo!, Minimalista e Google mudam a interface. Toque no logo para voltar ao início.
+Atajos: / o Ctrl+K enfocan la barra, Alt+0..5 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda. | Shortcuts: / or Ctrl+K focus the bar, Alt+0..5 switch interface, Ctrl+Enter opens the first result. Prefixes: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Also: math 2+2*5 (OSC Calculator), time, dice, coin. | Atalhos: / ou Ctrl+K focam a barra, Alt+0..5 trocam a interface, Ctrl+Enter abre o primeiro resultado. Prefixos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Também: mate 2+2*5 (OSC Calculator), hora, dado, moeda.
+📝 Notas rápidas | 📝 Quick notes | 📝 Notas rápidas
+Copiar | Copy | Copiar
+Descargar .txt | Download .txt | Baixar .txt
+Quitar completadas | Remove completed | Remover concluídas
+No hay búsquedas guardadas. | No saved searches. | Nenhuma pesquisa salva.
+Búsquedas totales | Total searches | Pesquisas totais
+Términos distintos | Distinct terms | Termos distintos
+Resultados visitados | Visited results | Resultados visitados
+Tareas pendientes | Pending tasks | Tarefas pendentes
+Más buscados | Most searched | Mais pesquisados
+Aún no hay datos. | No data yet. | Ainda não há dados.
+← Atrás | ← Back | ← Voltar
+Siguiente → | Next → | Próximo →
+Terminar | Finish | Concluir
+Relevancia | Relevance | Relevância
+★ Estrellas | ★ Stars | ★ Estrelas
+Compacto | Compact | Compacto
+Cómodo | Comfortable | Confortável
+🔗 Compartir | 🔗 Share | 🔗 Compartilhar
+Leer más en Wikipedia | Read more on Wikipedia | Leia mais na Wikipédia
+🔊 Escuchar | 🔊 Listen | 🔊 Ouvir
+🪙 Cara | 🪙 Heads | 🪙 Cara
+🪙 Cruz | 🪙 Tails | 🪙 Coroa
+🔑 Contraseña segura | 🔑 Secure password | 🔑 Senha segura
+Detener | Stop | Parar
+Enlace copiado | Link copied | Link copiado
+Copiado | Copied | Copiado
+No se pudo copiar | Could not copy | Não foi possível copiar
+Añadido a favoritos ⭐ | Added to favorites ⭐ | Adicionado aos favoritos ⭐
+Quitado de favoritos | Removed from favorites | Removido dos favoritos
+Historial borrado | History cleared | Histórico apagado
+Ajustes restablecidos | Settings reset | Configurações redefinidas
+Exportado | Exported | Exportado
+Importado | Imported | Importado
+Archivo no válido | Invalid file | Arquivo inválido
+Sin conexión 📡 | Offline 📡 | Sem conexão 📡
+Conexión restaurada ✅ | Connection restored ✅ | Conexão restaurada ✅
+No se pudo cargar | Could not load | Não foi possível carregar
+No pude escucharte | I couldn't hear you | Não consegui te ouvir
+Operación no válida | Invalid operation | Operação inválida
+Temporizador detenido | Timer stopped | Temporizador parado
+⏰ ¡Tiempo! | ⏰ Time's up! | ⏰ Tempo esgotado!
+Contraseña copiada | Password copied | Senha copiada
+Notas copiadas | Notes copied | Notas copiadas
+No hay resultados | No results | Sem resultados
+☀️ Buenos días | ☀️ Good morning | ☀️ Bom dia
+🌤️ Buenas tardes | 🌤️ Good afternoon | 🌤️ Boa tarde
+🌙 Buenas noches | 🌙 Good evening | 🌙 Boa noite
+Quien persevera, alcanza. | Those who persevere, succeed. | Quem persevera, alcança.
+Un viaje de mil millas empieza con un paso. | A journey of a thousand miles begins with a single step. | Uma jornada de mil milhas começa com um passo.
+Lo que se hace con ganas, sale mejor. | What you do with enthusiasm turns out better. | O que se faz com vontade sai melhor.
+Aprender es el mejor hobby. | Learning is the best hobby. | Aprender é o melhor hobby.
+Pequeños avances cada día suman grandes resultados. | Small steps every day add up to big results. | Pequenos avanços a cada dia somam grandes resultados.
+La curiosidad es el motor del conocimiento. | Curiosity is the engine of knowledge. | A curiosidade é o motor do conhecimento.
+Si no sale a la primera, vuelve a intentarlo. | If it doesn't work the first time, try again. | Se não der certo na primeira vez, tente de novo.
+Un buen día empieza con una buena idea. | A good day starts with a good idea. | Um bom dia começa com uma boa ideia.
+Crear es mejor que consumir. | Creating beats consuming. | Criar é melhor do que consumir.
+Hoy es un buen día para aprender algo nuevo. | Today is a good day to learn something new. | Hoje é um bom dia para aprender algo novo.
+Inteligencia artificial | Artificial intelligence | Inteligência artificial
+Sistema solar | Solar system | Sistema solar
+Océano | Ocean | Oceano
+Historia de México | History of Mexico | História do México
+Videojuegos | Video games | Videogames
+Volcanes | Volcanoes | Vulcões
+Música | Music | Música
+Robótica | Robotics | Robótica
+Dinosaurios | Dinosaurs | Dinossauros
+👋 ¡Bienvenido a OSC Search! Escribe en la barra y presiona Enter: los resultados salen aquí mismo. | 👋 Welcome to OSC Search! Type in the bar and press Enter: results show up right here. | 👋 Bem-vindo ao OSC Search! Digite na barra e pressione Enter: os resultados aparecem aqui mesmo.
+🎨 Cambia la interfaz con Viejo, AERO, Yahoo!, Minimalista o Google. Toca el logo para volver al original. | 🎨 Change the interface with Old, AERO, Yahoo!, Minimalist or Google. Tap the logo to go back to the original. | 🎨 Mude a interface com Antigo, AERO, Yahoo!, Minimalista ou Google. Toque no logo para voltar ao original.
+⚡ Prueba: mate 2+2*5, 10 km a millas, clima Ensenada, definir casa, temporizador 5, contraseña, calendario, #ff8800. | ⚡ Try: math 2+2*5, 10 km to miles, weather Ensenada, define house, timer 5, password, calendar, #ff8800. | ⚡ Experimente: mate 2+2*5, 10 km para milhas, clima Ensenada, definir casa, temporizador 5, password, calendário, #ff8800.
+⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..5 cambian de interfaz. | ⌨️ Shortcuts: / or Ctrl+K focus the bar, j and k move through results, Alt+0..5 switch interface. | ⌨️ Atalhos: / ou Ctrl+K focam a barra, j e k percorrem os resultados, Alt+0..5 trocam a interface.`;
+  const ix = LANG === "en" ? 0 : 1;
+  const D = new Map();
+  RAW.split("\n").forEach(function (line) {
+    const p = line.split(" | ");
+    if (p.length === 3) D.set(p[0], [p[1], p[2]]);
+  });
+
+  const TABS = { "Todo": ["All", "Tudo"], "Imágenes": ["Images", "Imagens"] };
+
+  const RULES = [
+    [/^(Todo|Imágenes) \((\d+)\)$/, function (m) { return TABS[m[1]][ix] + " (" + m[2] + ")"; }],
+    [/^(\d+) resultados para "([\s\S]*)" \((\d+) ms\)$/, function (m) {
+      return ix ? m[0] : m[1] + ' results for "' + m[2] + '" (' + m[3] + " ms)";
+    }],
+    [/^No encontré resultados para "([\s\S]*)"$/, function (m) {
+      return ix ? 'Nenhum resultado encontrado para "' + m[1] + '"' : 'No results found for "' + m[1] + '"';
+    }],
+    [/^Ir a (.+)$/, function (m) { return (ix ? "Ir para " : "Go to ") + m[1]; }],
+    [/^(\d+) pendientes de (\d+)$/, function (m) {
+      return ix ? m[1] + " pendentes de " + m[2] : m[1] + " pending of " + m[2];
+    }],
+    [/^(\d+) caracteres$/, function (m) { return ix ? m[0] : m[1] + " characters"; }],
+    [/^(☀️ Buenos días|🌤️ Buenas tardes|🌙 Buenas noches) · ([\s\S]*)$/, function (m) {
+      return tr(m[1]) + " · " + m[2];
+    }],
+    [/^💡 ([\s\S]+)$/, function (m) { return "💡 " + tr(m[1]); }],
+    [/^📆 Un día como hoy, en (\d+): ([\s\S]*)$/, function (m) {
+      return (ix ? "📆 Neste dia, em " : "📆 On this day in ") + m[1] + ": " + m[2];
+    }],
+    [/^([\s\S]*?)  \((\d+\/\d+)\)$/, function (m) { return tr(m[1]) + "  (" + m[2] + ")"; }]
+  ];
+
+  function tr(s) {
+    const d = D.get(s);
+    if (d) return d[ix];
+    for (let i = 0; i < RULES.length; i++) {
+      const m = s.match(RULES[i][0]);
+      if (m) return RULES[i][1](m);
+    }
+    return s;
+  }
+
+  function fixText(n) {
+    const v = n.nodeValue;
+    if (!v || !v.trim()) return;
+    const m = v.match(/^(\s*)([\s\S]*?)(\s*)$/);
+    const t = tr(m[2]);
+    if (t !== m[2]) n.nodeValue = m[1] + t + m[3];
+  }
+
+  function fixAttrs(e) {
+    ["placeholder", "title", "aria-label"].forEach(function (a) {
+      const v = e.getAttribute(a);
+      if (!v) return;
+      const t = tr(v);
+      if (t !== v) e.setAttribute(a, t);
+    });
+  }
+
+  function walk(n) {
+    if (n.nodeType === 3) return fixText(n);
+    if (n.nodeType !== 1 || /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.tagName)) return;
+    fixAttrs(n);
+    n.childNodes.forEach(walk);
+  }
+
+  new MutationObserver(function (list) {
+    list.forEach(function (m) {
+      if (m.type === "childList") m.addedNodes.forEach(walk);
+      else if (m.type === "characterData") fixText(m.target);
+      else fixAttrs(m.target);
+    });
+  }).observe(body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["placeholder", "title", "aria-label"]
+  });
+
+  walk(body);
+})();
+</script>
+</body>
+</html>
