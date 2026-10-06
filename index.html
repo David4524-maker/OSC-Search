@@ -165,6 +165,17 @@ dialog button{padding:8px 20px;font:700 16px Arial;cursor:pointer;border:3px sol
   .yt svg{width:100px;height:70px}
   .about{margin-left:0}
 }
+.t-duck{background:#fff;border-color:#de5833;color:#de5833}
+#engSel{margin-left:auto;padding:5px 10px;border-radius:16px;border:2px solid rgba(0,0,0,.35);background:#fff;color:#222;font:inherit;font-weight:700;cursor:pointer}
+#engSel + .langs{margin-left:8px}
+[data-theme=duck]{--head:#fff;--head-line:#ebebeb;--body:#fff;--bar-bg:#fff;--bar-border:#de5833;--bar-radius:28px;--bar-shadow:0 1px 6px rgba(0,0,0,.18);--link:#de5833;--head-fg:#333;--text:#333;--t1:#de5833;--t2:#333;--font:"Helvetica Neue",Arial,sans-serif}
+[data-theme=duck] header{border-bottom-width:1px}
+[data-theme=duck] .bar{border-width:2px}
+[data-theme=duck] #home,[data-theme=duck] .status{color:#666;text-shadow:none}
+[data-theme=duck] h1{font-weight:700}
+[data-theme=duck] h1 .a{color:#de5833;text-shadow:none}
+[data-theme=duck] h1 .b{color:#333;text-shadow:none}
+body[data-theme=duck]{--s-text:#333;--s-title:#1a56db;--s-vis:#7a3ec8;--s-url:#2e7d32;--s-muted:#666;--s-accent:#de5833;--s-line:#e5e5e5;--s-sh:none}
 </style>
 <style>
 /* ===== Módulo extra ===== */
@@ -342,7 +353,11 @@ body.serp #more { align-self: flex-start; }
     <button class="t-yahoo" data-t="yahoo">Yahoo!</button>
     <button class="t-mini" data-t="minimalista">Minimalista</button>
     <button class="t-google" data-t="google">Google</button>
+    <button class="t-duck" data-t="duck">DuckDuckGo</button>
   </div>
+  <select id="engSel" aria-label="Buscador" title="Buscador">
+    <option value="google">Google</option><option value="osc">OSC Search</option><option value="ddg">DuckDuckGo</option><option value="ecosia">Ecosia</option><option value="bing">Bing</option>
+  </select>
   <div class="langs" role="group" aria-label="Idioma">
     <button data-l="es">ES</button>
     <button data-l="en">EN</button>
@@ -402,7 +417,7 @@ body.serp #more { align-self: flex-start; }
   <p>OSC Search es un buscador hecho en un solo archivo HTML. Escribe algo y los resultados aparecen aquí mismo; al tocar uno, se abre en una pestaña nueva.</p>
   <p>Si escribes una dirección web, como wikipedia.org, se abre directamente ese sitio.</p>
   <p>Los botones Viejo, AERO, Yahoo!, Minimalista y Google cambian la interfaz. Toca el logo para volver al inicio.</p>
-  <p>Atajos: / o Ctrl+K enfocan la barra, Alt+0..5 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda.</p>
+  <p>Atajos: / o Ctrl+K enfocan la barra, Alt+0..6 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda.</p>
   <button id="closeAbout">Cerrar</button>
 </dialog>
 
@@ -422,7 +437,7 @@ body.serp #more { align-self: flex-start; }
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const LS={g(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const DEF={lang:"es",hist:true,newtab:true,per:10,fs:100,bg:"",dark:false,theme:"default"};
+const DEF={eng:"osc",lang:"es",hist:true,newtab:true,per:10,fs:100,bg:"",dark:false,theme:"default"};
 const DQ=[{n:"YouTube",u:"https://www.youtube.com/"},{n:"Wikipedia",u:"https://es.wikipedia.org/"},{n:"GitHub",u:"https://github.com/"},{n:"CodePen",u:"https://codepen.io/"},{n:"Maps",u:"https://maps.google.com/"}];
 let cfg=Object.assign({},DEF,LS.g("osc.cfg",{})),hist=LS.g("osc.hist",[]),favs=LS.g("osc.favs",[]),quick=LS.g("osc.quick",DQ);
 const save=()=>{LS.s("osc.cfg",cfg);LS.s("osc.hist",hist);LS.s("osc.favs",favs);LS.s("osc.quick",quick)};
@@ -430,8 +445,9 @@ let LANG=(LS.g("osc.cfg",{}).lang)||"es";
 const LOC=()=>({es:"es-MX",en:"en-US",pt:"pt-BR"}[LANG]||"es-MX");
 const L2=()=>LANG==="en"?"es":"en";
 const SITES={google:{name:"Google",url:"https://www.google.com/"},github:{name:"GitHub",url:"https://github.com/"},youtube:{name:"YouTube",url:"https://www.youtube.com/"}};
-const BANGS={g:"https://www.google.com/search?q=",yt:"https://www.youtube.com/results?search_query=",gh:"https://github.com/search?q=",w:"https://"+LANG+".wikipedia.org/w/index.php?search=",ddg:"https://duckduckgo.com/?q="};
-const THEMES=["viejo","aero","yahoo","minimalista","google"];
+const BANGS={g:"https://www.google.com/search?q=",yt:"https://www.youtube.com/results?search_query=",gh:"https://github.com/search?q=",w:"https://"+LANG+".wikipedia.org/w/index.php?search=",ddg:"https://html.duckduckgo.com/html/?q="};
+const THEMES=["viejo","aero","yahoo","minimalista","google","duck"];
+const ENGINES={google:"https://www.google.com/search?q=",ddg:"https://html.duckduckgo.com/html/?q=",ecosia:"https://www.ecosia.org/search?q=",bing:"https://www.bing.com/search?q="};
 const q=$("#q"),status=$("#status"),tabsBox=$("#tabs"),resBox=$("#results"),card=$("#card"),sug=$("#sug"),more=$("#more");
 let data={wikies:[],wikien:[],gh:[],img:[],failed:false},tab="all",token=0,lastQ="",limit=10,cur=[],ms=0,sugI=-1,sT;
 
@@ -512,6 +528,7 @@ function search(t){
   if(!t)return home();
   const m=t.match(/^!(\w+)\s+(.+)/);if(m&&BANGS[m[1].toLowerCase()])return openTab(BANGS[m[1].toLowerCase()]+encodeURIComponent(m[2]));
   if(looksLikeUrl(t))return openTab(/^https?:\/\//i.test(t)?t:"https://"+t);
+  const E=ENGINES[cfg.eng];if(E){if(cfg.hist){hist=[t,...hist.filter(x=>x!==t)].slice(0,30);save()}return openTab(E+encodeURIComponent(t))}
   if(cfg.hist){hist=[t,...hist.filter(x=>x!==t)].slice(0,30);save()}
   document.title=t+" - OSC Search";setFav("🔎");
   try{history.replaceState(null,"","#q="+encodeURIComponent(t))}catch(e){}
@@ -598,6 +615,8 @@ $$(".themes button").forEach(b=>b.addEventListener("click",()=>setTheme(b.datase
 $("#logo").onclick=()=>{setTheme("default");home()};
 $("#rndBtn").onclick=()=>setTheme(THEMES[Math.floor(Math.random()*THEMES.length)]);
 $("#darkBtn").onclick=()=>{cfg.dark=!cfg.dark;save();apply()};
+$("#engSel").value=ENGINES[cfg.eng]||cfg.eng==="osc"?cfg.eng:"osc";
+$("#engSel").onchange=e=>{cfg.eng=e.target.value;save();q.focus()};
 $("#setBtn").onclick=()=>{$("#sHist").checked=cfg.hist;$("#sNew").checked=cfg.newtab;$("#sPer").value=cfg.per;$("#sFs").value=cfg.fs;$("#sBg").value=cfg.bg||"#00a2e8";$("#set").showModal()};
 $("#sHist").onchange=e=>{cfg.hist=e.target.checked;save()};
 $("#sNew").onchange=e=>{cfg.newtab=e.target.checked;save();cur.length&&render()};
@@ -617,7 +636,7 @@ $("#closeAbout").onclick=()=>$("#about").close();
 addEventListener("keydown",e=>{
   const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   if((e.key==="/"&&!typing)||(e.key.toLowerCase()==="k"&&(e.ctrlKey||e.metaKey))){e.preventDefault();q.focus();q.select()}
-  const m=e.altKey&&/^Digit([0-5])$/.exec(e.code);if(m)setTheme(m[1]==="0"?"default":THEMES[m[1]-1]);
+  const m=e.altKey&&/^Digit([0-6])$/.exec(e.code);if(m)setTheme(m[1]==="0"?"default":THEMES[m[1]-1]);
 });
 addEventListener("scroll",()=>$("#top").style.display=scrollY>400?"block":"none");
 $("#top").onclick=()=>scrollTo({top:0,behavior:"smooth"});
@@ -1116,7 +1135,7 @@ apply();drawQuick();upd();setFav("🔍");
     "👋 ¡Bienvenido a OSC Search! Escribe en la barra y presiona Enter: los resultados salen aquí mismo.",
     "🎨 Cambia la interfaz con Viejo, AERO, Yahoo!, Minimalista o Google. Toca el logo para volver al original.",
     "⚡ Prueba: mate 2+2*5, 10 km a millas, clima Ensenada, definir casa, temporizador 5, contraseña, calendario, #ff8800.",
-    "⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..5 cambian de interfaz."
+    "⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..6 cambian de interfaz."
   ];
   let tourStep = 0;
   const dTour = makeDialog("dTour", "❓ Tour",
@@ -1432,6 +1451,7 @@ Aún no tienes favoritos. Toca ☆ en un resultado. | You have no favorites yet.
 Guardar historial | Save history | Salvar histórico
 Abrir resultados en pestaña nueva | Open results in a new tab | Abrir resultados em nova aba
 Resultados por búsqueda | Results per search | Resultados por pesquisa
+Buscador | Search engine | Mecanismo de busca
 Tamaño | Size | Tamanho
 Color de fondo (estilo original) | Background color (original style) | Cor de fundo (estilo original)
 Color de cabecera (estilo original) | Header color (original style) | Cor do cabeçalho (estilo original)
@@ -1449,7 +1469,7 @@ Acerca de OSC Search | About OSC Search | Sobre o OSC Search
 OSC Search es un buscador hecho en un solo archivo HTML. Escribe algo y los resultados aparecen aquí mismo; al tocar uno, se abre en una pestaña nueva. | OSC Search is a search engine built in a single HTML file. Type something and the results appear right here; tap one to open it in a new tab. | O OSC Search é um buscador feito em um único arquivo HTML. Digite algo e os resultados aparecem aqui mesmo; toque em um para abri-lo em uma nova aba.
 Si escribes una dirección web, como wikipedia.org, se abre directamente ese sitio. | If you type a web address, like wikipedia.org, that site opens directly. | Se você digitar um endereço da web, como wikipedia.org, esse site abre diretamente.
 Los botones Viejo, AERO, Yahoo!, Minimalista y Google cambian la interfaz. Toca el logo para volver al inicio. | The Old, AERO, Yahoo!, Minimalist and Google buttons change the interface. Tap the logo to go back home. | Os botões Antigo, AERO, Yahoo!, Minimalista e Google mudam a interface. Toque no logo para voltar ao início.
-Atajos: / o Ctrl+K enfocan la barra, Alt+0..5 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda. | Shortcuts: / or Ctrl+K focus the bar, Alt+0..5 switch interface, Ctrl+Enter opens the first result. Prefixes: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Also: math 2+2*5 (OSC Calculator), time, dice, coin. | Atalhos: / ou Ctrl+K focam a barra, Alt+0..5 trocam a interface, Ctrl+Enter abre o primeiro resultado. Prefixos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Também: mate 2+2*5 (OSC Calculator), hora, dado, moeda.
+Atajos: / o Ctrl+K enfocan la barra, Alt+0..6 cambian de interfaz, Ctrl+Enter abre el primer resultado. Prefijos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. También: mate 2+2*5 (OSC Calculator), hora, dado, moneda. | Shortcuts: / or Ctrl+K focus the bar, Alt+0..6 switch interface, Ctrl+Enter opens the first result. Prefixes: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Also: math 2+2*5 (OSC Calculator), time, dice, coin. | Atalhos: / ou Ctrl+K focam a barra, Alt+0..6 trocam a interface, Ctrl+Enter abre o primeiro resultado. Prefixos: !g Google, !yt YouTube, !gh GitHub, !w Wikipedia, !ddg DuckDuckGo. Também: mate 2+2*5 (OSC Calculator), hora, dado, moeda.
 📝 Notas rápidas | 📝 Quick notes | 📝 Notas rápidas
 Copiar | Copy | Copiar
 Descargar .txt | Download .txt | Baixar .txt
@@ -1520,7 +1540,7 @@ Dinosaurios | Dinosaurs | Dinossauros
 👋 ¡Bienvenido a OSC Search! Escribe en la barra y presiona Enter: los resultados salen aquí mismo. | 👋 Welcome to OSC Search! Type in the bar and press Enter: results show up right here. | 👋 Bem-vindo ao OSC Search! Digite na barra e pressione Enter: os resultados aparecem aqui mesmo.
 🎨 Cambia la interfaz con Viejo, AERO, Yahoo!, Minimalista o Google. Toca el logo para volver al original. | 🎨 Change the interface with Old, AERO, Yahoo!, Minimalist or Google. Tap the logo to go back to the original. | 🎨 Mude a interface com Antigo, AERO, Yahoo!, Minimalista ou Google. Toque no logo para voltar ao original.
 ⚡ Prueba: mate 2+2*5, 10 km a millas, clima Ensenada, definir casa, temporizador 5, contraseña, calendario, #ff8800. | ⚡ Try: math 2+2*5, 10 km to miles, weather Ensenada, define house, timer 5, password, calendar, #ff8800. | ⚡ Experimente: mate 2+2*5, 10 km para milhas, clima Ensenada, definir casa, temporizador 5, password, calendário, #ff8800.
-⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..5 cambian de interfaz. | ⌨️ Shortcuts: / or Ctrl+K focus the bar, j and k move through results, Alt+0..5 switch interface. | ⌨️ Atalhos: / ou Ctrl+K focam a barra, j e k percorrem os resultados, Alt+0..5 trocam a interface.`;
+⌨️ Atajos: / o Ctrl+K enfocan la barra, j y k recorren resultados, Alt+0..6 cambian de interfaz. | ⌨️ Shortcuts: / or Ctrl+K focus the bar, j and k move through results, Alt+0..6 switch interface. | ⌨️ Atalhos: / ou Ctrl+K focam a barra, j e k percorrem os resultados, Alt+0..6 trocam a interface.`;
   const ix = LANG === "en" ? 0 : 1;
   const D = new Map();
   RAW.split("\n").forEach(function (line) {
